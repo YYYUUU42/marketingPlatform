@@ -1,4 +1,4 @@
-package com.yu.common.redis;
+package com.yu.market.common.redis;
 
 import org.redisson.api.*;
 

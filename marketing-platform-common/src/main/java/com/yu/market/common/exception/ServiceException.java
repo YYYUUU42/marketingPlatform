@@ -1,8 +1,8 @@
-package com.yu.common.exception;
+package com.yu.market.common.exception;
 
 
-import com.yu.common.exception.errorCode.BaseErrorCode;
-import com.yu.common.exception.errorCode.IErrorCode;
+import com.yu.market.common.exception.errorCode.BaseErrorCode;
+import com.yu.market.common.exception.errorCode.IErrorCode;
 
 import java.util.Optional;
 

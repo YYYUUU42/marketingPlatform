@@ -1,7 +1,7 @@
-package com.yu.common.result;
+package com.yu.market.common.result;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.yu.common.exception.errorCode.IErrorCode;
+import com.yu.market.common.exception.errorCode.IErrorCode;
 import lombok.Data;
 
 import java.io.Serializable;

@@ -1,7 +1,7 @@
-package com.yu.common.exception;
+package com.yu.market.common.exception;
 
-import com.yu.common.exception.errorCode.BaseErrorCode;
-import com.yu.common.result.ResponseResult;
+import com.yu.market.common.exception.errorCode.BaseErrorCode;
+import com.yu.market.common.result.ResponseResult;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;

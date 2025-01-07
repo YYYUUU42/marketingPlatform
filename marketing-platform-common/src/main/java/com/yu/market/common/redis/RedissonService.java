@@ -1,4 +1,4 @@
-package com.yu.common.redis;
+package com.yu.market.common.redis;
 
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.*;
@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  * @description Redis 服务
  * @date 2024-12-19
  */
-@Service("redissonService")
+@Service
 @RequiredArgsConstructor
 public class RedissonService implements IRedisService {
 

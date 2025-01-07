@@ -1,4 +1,4 @@
-package com.yu.common.exception.errorCode;
+package com.yu.market.common.exception.errorCode;
 
 /**
  * @author yu

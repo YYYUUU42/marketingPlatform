@@ -66,4 +66,6 @@ public class RedisClientConfigProperties {
 	 * 设置是否保持长连接，默认为true
 	 */
 	private boolean keepAlive = true;
+
+	private String serializer = "fastjson";
 }

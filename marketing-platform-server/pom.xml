@@ -12,7 +12,7 @@
     <artifactId>marketing-platform-server</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>lottery</module>
+        <module>raffle</module>
     </modules>
 
     <properties>
