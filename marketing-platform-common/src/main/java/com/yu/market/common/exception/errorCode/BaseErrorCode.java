@@ -34,7 +34,13 @@ public enum BaseErrorCode implements IErrorCode {
     SERVICE_TIMEOUT_ERROR("B000100", "系统执行超时"),
 
     // ========== 调用第三方服务错误 ==========
-    REMOTE_ERROR("C000001", "调用第三方服务发生错误");
+    REMOTE_ERROR("C000001", "调用第三方服务发生错误"),
+
+    // ========== 抽奖相关错误 ==========
+    STRATEGY_RULE_WEIGHT_IS_NULL("ERR_BIZ_001", "业务异常，策略规则中 rule_weight 权重规则已适用但未配置"),
+
+
+    ;
 
 
     private final String code;

@@ -1,6 +1,8 @@
 package com.yu.market.server.raffle.repository;
 
 import com.yu.market.server.raffle.model.bo.StrategyAwardBO;
+import com.yu.market.server.raffle.model.bo.StrategyBO;
+import com.yu.market.server.raffle.model.bo.StrategyRuleBO;
 
 import java.util.List;
 import java.util.Map;
@@ -20,15 +22,25 @@ public interface IStrategyRepository {
     /**
      * 将与某个策略（strategyId）相关的概率查找表和抽奖范围值存储到缓存中，供后续抽奖逻辑使用
      */
-    void storeStrategyAwardSearchRateTable(Long strategyId, Integer rateRange, Map<Integer, Integer> strategyAwardSearchRateTable);
+    void storeStrategyAwardSearchRateTable(String cacheKey, Integer rateRange, Map<Integer, Integer> strategyAwardSearchRateTable);
 
     /**
      * 根据策略 ID 和随机数（rateKey），从缓存中获取对应的奖项 ID
      */
-    Integer getStrategyAwardAssemble(Long strategyId, Integer rateKey);
+    Integer getStrategyAwardAssemble(String cacheKey, Integer rateKey);
 
     /**
      * 获取某个策略（strategyId）的抽奖范围值（rateRange）
      */
-    int getRateRange(Long strategyId);
+    int getRateRange(String cacheKey);
+
+    /**
+     * 查询抽奖策略
+     */
+    StrategyBO queryStrategyBOByStrategyId(Long strategyId);
+
+    /**
+     * 根据策略id和规则模型得到抽奖策略规则
+     */
+    StrategyRuleBO queryStrategyRule(Long strategyId, String ruleModel);
 }

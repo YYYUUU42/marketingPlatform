@@ -1,7 +1,11 @@
 package com.yu.market.server.raffle.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
+import com.yu.market.common.exception.ServiceException;
 import com.yu.market.server.raffle.model.bo.StrategyAwardBO;
+import com.yu.market.server.raffle.model.bo.StrategyBO;
+import com.yu.market.server.raffle.model.bo.StrategyRuleBO;
 import com.yu.market.server.raffle.repository.StrategyRepository;
 import com.yu.market.server.raffle.service.IStrategyArmory;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.*;
 import java.util.*;
+
+import static com.yu.market.common.exception.errorCode.BaseErrorCode.STRATEGY_RULE_WEIGHT_IS_NULL;
 
 @Slf4j
 @Service
@@ -33,6 +39,35 @@ public class StrategyArmoryImpl implements IStrategyArmory {
 			return false;
 		}
 
+		// 查询权重策略配置
+		StrategyBO strategyBO = repository.queryStrategyBOByStrategyId(strategyId);
+		String ruleWeight = strategyBO.getRuleWeight();
+		if (StrUtil.isBlank(ruleWeight)) {
+			return true;
+		}
+
+		// 查询策略规则中 rule_weight 权重规则
+		StrategyRuleBO strategyRuleBO = repository.queryStrategyRule(strategyId, ruleWeight);
+		if (strategyRuleBO == null) {
+			throw new ServiceException(STRATEGY_RULE_WEIGHT_IS_NULL);
+		}
+
+		Map<String, List<Integer>> ruleWeightValueMap = strategyRuleBO.getRuleWeightValues();
+		ruleWeightValueMap.forEach((key, ruleWeightValues) -> {
+			List<StrategyAwardBO> strategyAwardBOS = strategyAwardBOList.stream()
+					.filter(strategyAward -> ruleWeightValues.contains(strategyAward.getAwardId()))
+					.toList();
+
+			assembleLotteryStrategy(strategyId + "_" + key, strategyAwardBOS);
+		});
+
+		return true;
+	}
+
+	/**
+	 *
+	 */
+	private void assembleLotteryStrategy(String cacheKey, List<StrategyAwardBO> strategyAwardBOList) {
 		// 获取最小概率值
 		BigDecimal minAwardRate = strategyAwardBOList.stream()
 				.map(StrategyAwardBO::getAwardRate)
@@ -58,7 +93,7 @@ public class StrategyArmoryImpl implements IStrategyArmory {
 					return Collections.nCopies(occupyCount, awardId).stream();
 				}).toList());
 
-		 // 对查找表进行乱序操作
+		// 对查找表进行乱序操作
 		Collections.shuffle(strategyAwardSearchRateTable);
 
 		// 构建概率查找表的 Map	key 为查找表的索引，value 为奖品id
@@ -68,8 +103,6 @@ public class StrategyArmoryImpl implements IStrategyArmory {
 		}
 
 		// 存到 Redis 中
-		repository.storeStrategyAwardSearchRateTable(strategyId, shuffleStrategyAwardSearchRateTable.size(), shuffleStrategyAwardSearchRateTable);
-
-		return true;
+		repository.storeStrategyAwardSearchRateTable(cacheKey, shuffleStrategyAwardSearchRateTable.size(), shuffleStrategyAwardSearchRateTable);
 	}
 }
