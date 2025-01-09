@@ -1,4 +1,4 @@
-package com.yu.market.server.raffle.service;
+package com.yu.market.server.raffle.service.armory;
 
 /**
  * @author yu

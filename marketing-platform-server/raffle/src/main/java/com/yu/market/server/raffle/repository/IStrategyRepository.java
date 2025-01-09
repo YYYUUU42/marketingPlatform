@@ -43,4 +43,18 @@ public interface IStrategyRepository {
      * 根据策略id和规则模型得到抽奖策略规则
      */
     StrategyRuleBO queryStrategyRule(Long strategyId, String ruleModel);
+
+    /**
+     * 查询抽检规则
+     */
+    String queryStrategyRuleValue(Long strategyId, Integer awardId, String ruleModel);
+
+    /**
+     * 根据用户ID、策略ID，查询用户活动账户总使用量
+     *
+     * @param userId     用户ID
+     * @param strategyId 策略ID
+     * @return 使用总量
+     */
+    Integer queryActivityAccountTotalUseCount(String userId, Long strategyId);
 }

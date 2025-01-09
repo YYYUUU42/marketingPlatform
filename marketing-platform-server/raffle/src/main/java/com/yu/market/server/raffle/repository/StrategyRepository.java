@@ -3,16 +3,13 @@ package com.yu.market.server.raffle.repository;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yu.market.common.contants.RedisKey;
+import com.yu.market.common.exception.ServiceException;
 import com.yu.market.common.redis.IRedisService;
-import com.yu.market.server.raffle.mapper.StrategyAwardMapper;
-import com.yu.market.server.raffle.mapper.StrategyMapper;
-import com.yu.market.server.raffle.mapper.StrategyRuleMapper;
+import com.yu.market.server.raffle.mapper.*;
 import com.yu.market.server.raffle.model.bo.StrategyAwardBO;
 import com.yu.market.server.raffle.model.bo.StrategyBO;
 import com.yu.market.server.raffle.model.bo.StrategyRuleBO;
-import com.yu.market.server.raffle.model.pojo.Strategy;
-import com.yu.market.server.raffle.model.pojo.StrategyAward;
-import com.yu.market.server.raffle.model.pojo.StrategyRule;
+import com.yu.market.server.raffle.model.pojo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -31,6 +28,8 @@ public class StrategyRepository implements IStrategyRepository {
 	private final StrategyMapper strategyMapper;
 	private final StrategyAwardMapper strategyAwardMapper;
 	private final StrategyRuleMapper strategyRuleMapper;
+	private final RaffleActivityMapper raffleActivityMapper;
+	private final RaffleActivityAccountMapper raffleActivityAccountMapper;
 	private final IRedisService redisService;
 
 	/**
@@ -140,5 +139,45 @@ public class StrategyRepository implements IStrategyRepository {
 				.ruleValue(strategyRule.getRuleValue())
 				.ruleDesc(strategyRule.getRuleDesc())
 				.build();
+	}
+
+	/**
+	 * 查询抽检规则
+	 */
+	@Override
+	public String queryStrategyRuleValue(Long strategyId, Integer awardId, String ruleModel) {
+		StrategyRule strategyRule = strategyRuleMapper.selectOne(new LambdaQueryWrapper<StrategyRule>()
+				.eq(StrategyRule::getStrategyId, strategyId)
+				.eq(StrategyRule::getAwardId, awardId)
+				.eq(StrategyRule::getRuleModel, ruleModel));
+
+		return strategyRule != null ? strategyRule.getRuleValue() : null;
+	}
+
+	/**
+	 * 根据用户ID、策略ID，查询用户活动账户总使用量
+	 *
+	 * @param userId     用户ID
+	 * @param strategyId 策略ID
+	 * @return 使用总量
+	 */
+	@Override
+	public Integer queryActivityAccountTotalUseCount(String userId, Long strategyId) {
+		RaffleActivity raffleActivity = raffleActivityMapper.selectOne(new LambdaQueryWrapper<RaffleActivity>()
+				.eq(RaffleActivity::getStrategyId, strategyId));
+		if (raffleActivity == null) {
+			throw new ServiceException("未查询到该策略Id 活动: " + strategyId);
+		}
+
+		Long activityId = raffleActivity.getActivityId();
+		RaffleActivityAccount raffleActivityAccount = raffleActivityAccountMapper.selectOne(new LambdaQueryWrapper<RaffleActivityAccount>()
+				.eq(RaffleActivityAccount::getUserId, userId)
+				.eq(RaffleActivityAccount::getActivityId, activityId));
+		if (raffleActivityAccount == null) {
+			throw new ServiceException("未查询到该用户在该活动的行为 userId: " + userId + "activityId: " + activityId);
+		}
+
+		// 返回计算使用量
+		return raffleActivityAccount.getTotalCount() - raffleActivityAccount.getTotalCountSurplus();
 	}
 }

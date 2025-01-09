@@ -1,4 +1,4 @@
-package com.yu.market.server.raffle.service.impl;
+package com.yu.market.server.raffle.service.armory.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
@@ -7,12 +7,14 @@ import com.yu.market.server.raffle.model.bo.StrategyAwardBO;
 import com.yu.market.server.raffle.model.bo.StrategyBO;
 import com.yu.market.server.raffle.model.bo.StrategyRuleBO;
 import com.yu.market.server.raffle.repository.StrategyRepository;
-import com.yu.market.server.raffle.service.IStrategyArmory;
+import com.yu.market.server.raffle.service.armory.IStrategyArmory;
+import com.yu.market.server.raffle.service.armory.IStrategyDispatch;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.*;
+import java.security.SecureRandom;
 import java.util.*;
 
 import static com.yu.market.common.exception.errorCode.BaseErrorCode.STRATEGY_RULE_WEIGHT_IS_NULL;
@@ -20,7 +22,7 @@ import static com.yu.market.common.exception.errorCode.BaseErrorCode.STRATEGY_RU
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class StrategyArmoryImpl implements IStrategyArmory {
+public class StrategyArmoryImpl implements IStrategyArmory , IStrategyDispatch {
 
 	private final StrategyRepository repository;
 
@@ -104,5 +106,26 @@ public class StrategyArmoryImpl implements IStrategyArmory {
 
 		// 存到 Redis 中
 		repository.storeStrategyAwardSearchRateTable(cacheKey, shuffleStrategyAwardSearchRateTable.size(), shuffleStrategyAwardSearchRateTable);
+	}
+
+	/**
+	 * 获取抽奖策略装配的随机结果
+	 */
+	@Override
+	public Integer getRandomAwardId(Long strategyId) {
+		int rateRange = repository.getRateRange(String.valueOf(strategyId));
+
+		return repository.getStrategyAwardAssemble(String.valueOf(strategyId), new SecureRandom().nextInt(rateRange));
+	}
+
+	/**
+	 * 获取抽奖策略装配的随机结果 - 权重
+	 */
+	@Override
+	public Integer getRandomAwardId(Long strategyId, String ruleWeightValue) {
+		String key = String.valueOf(strategyId).concat("_").concat(ruleWeightValue);
+		int rateRange = repository.getRateRange(key);
+
+		return repository.getStrategyAwardAssemble(key, new SecureRandom().nextInt(rateRange));
 	}
 }

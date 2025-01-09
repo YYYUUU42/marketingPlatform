@@ -29,6 +29,7 @@ public enum BaseErrorCode implements IErrorCode {
 
     // ========== 系统执行错误 ==========
     SERVICE_ERROR("B000001", "系统执行错误"),
+    ILLEGAL_PARAMETER("B000002", "非法参数"),
 
     // ========== 系统执行超时 ==========
     SERVICE_TIMEOUT_ERROR("B000100", "系统执行超时"),
