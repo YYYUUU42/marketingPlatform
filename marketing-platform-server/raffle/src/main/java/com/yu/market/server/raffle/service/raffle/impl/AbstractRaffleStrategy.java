@@ -6,13 +6,13 @@ import com.yu.market.common.exception.errorCode.BaseErrorCode;
 import com.yu.market.server.raffle.model.bo.RaffleAwardBO;
 import com.yu.market.server.raffle.model.bo.RaffleFactorBO;
 import com.yu.market.server.raffle.model.bo.RuleActionBO;
-import com.yu.market.server.raffle.model.bo.StrategyBO;
+import com.yu.market.server.raffle.model.bo.StrategyAwardRuleModelBO;
 import com.yu.market.server.raffle.model.enums.RuleLogicCheckType;
 import com.yu.market.server.raffle.repository.IStrategyRepository;
 import com.yu.market.server.raffle.service.armory.IStrategyDispatch;
 import com.yu.market.server.raffle.service.raffle.IRaffleStrategy;
-import com.yu.market.server.raffle.service.rule.factory.DefaultLogicFactory;
-import lombok.RequiredArgsConstructor;
+import com.yu.market.server.raffle.service.rule.chain.ILogicChain;
+import com.yu.market.server.raffle.service.rule.chain.factory.DefaultChainFactory;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -21,15 +21,16 @@ import lombok.extern.slf4j.Slf4j;
  * @date 2025-01-09
  */
 @Slf4j
-@RequiredArgsConstructor
 public abstract class AbstractRaffleStrategy implements IRaffleStrategy {
 
 	protected IStrategyRepository repository;
 	protected IStrategyDispatch strategyDispatch;
+	private final DefaultChainFactory defaultChainFactory;
 
-	public AbstractRaffleStrategy(IStrategyRepository repository, IStrategyDispatch strategyDispatch) {
+	public AbstractRaffleStrategy(IStrategyRepository repository, IStrategyDispatch strategyDispatch, DefaultChainFactory defaultChainFactory) {
 		this.repository = repository;
 		this.strategyDispatch = strategyDispatch;
+		this.defaultChainFactory = defaultChainFactory;
 	}
 
 	@Override
@@ -41,38 +42,34 @@ public abstract class AbstractRaffleStrategy implements IRaffleStrategy {
 			throw new ServiceException(BaseErrorCode.ILLEGAL_PARAMETER);
 		}
 
-		// 策略查询
-		StrategyBO strategy = repository.queryStrategyBOByStrategyId(strategyId);
+		// 获取抽奖责任链 - 前置规则的责任链处理
+		ILogicChain logicChain = defaultChainFactory.openLogicChain(strategyId);
 
-		// 抽奖前 - 规则过滤
-		RuleActionBO<RuleActionBO.RaffleBeforeBO> ruleActionBO = this.doCheckRaffleBeforeLogic(RaffleFactorBO.builder().userId(userId).strategyId(strategyId).build(), strategy.ruleModels());
+		// 通过责任链获得，奖品ID
+		Integer awardId = logicChain.logic(userId, strategyId);
 
-		if (RuleLogicCheckType.TAKE_OVER.getCode().equals(ruleActionBO.getCode())) {
-			if (DefaultLogicFactory.LogicModel.RULE_BLACKLIST.getCode().equals(ruleActionBO.getRuleModel())) {
-				// 黑名单返回固定的奖品ID
-				return RaffleAwardBO.builder()
-						.awardId(ruleActionBO.getData().getAwardId())
-						.build();
-			} else if (DefaultLogicFactory.LogicModel.RULE_WIGHT.getCode().equals(ruleActionBO.getRuleModel())) {
-				// 权重根据返回的信息进行抽奖
-				RuleActionBO.RaffleBeforeBO raffleBeforeBO = ruleActionBO.getData();
-				String ruleWeightValueKey = raffleBeforeBO.getRuleWeightValueKey();
-				Integer awardId = strategyDispatch.getRandomAwardId(strategyId, ruleWeightValueKey);
-				return RaffleAwardBO.builder()
-						.awardId(awardId)
-						.build();
-			}
+		// 查询奖品规则「抽奖中（拿到奖品ID时，过滤规则）、抽奖后（扣减完奖品库存后过滤，抽奖中拦截和无库存则走兜底）」
+		StrategyAwardRuleModelBO strategyAwardRuleModelVO = repository.queryStrategyAwardRuleModelBO(strategyId, awardId);
+
+		// 抽奖中 - 规则过滤
+		RaffleFactorBO raffleFactor = RaffleFactorBO.builder()
+				.userId(userId)
+				.strategyId(strategyId)
+				.awardId(awardId)
+				.build();
+		RuleActionBO<RuleActionBO.RaffleCenterBO> ruleActionCenterBO = this.doCheckRaffleCenterLogic(raffleFactor, strategyAwardRuleModelVO.raffleCenterRuleModelList());
+
+		if (RuleLogicCheckType.TAKE_OVER.getCode().equals(ruleActionCenterBO.getCode())) {
+			log.info("中奖中规则拦截，通过抽奖后规则 rule_luck_award 走兜底奖励。");
+			return RaffleAwardBO.builder()
+					.awardDesc("中奖中规则拦截，通过抽奖后规则 rule_luck_award 走兜底奖励。")
+					.build();
 		}
-
-		// 4. 默认抽奖流程
-		Integer awardId = strategyDispatch.getRandomAwardId(strategyId);
 
 		return RaffleAwardBO.builder()
 				.awardId(awardId)
 				.build();
 	}
-
-	protected abstract RuleActionBO<RuleActionBO.RaffleBeforeBO> doCheckRaffleBeforeLogic(RaffleFactorBO raffleFactorBO, String... logics);
 
 	protected abstract RuleActionBO<RuleActionBO.RaffleCenterBO> doCheckRaffleCenterLogic(RaffleFactorBO raffleFactorBO, String... logics);
 

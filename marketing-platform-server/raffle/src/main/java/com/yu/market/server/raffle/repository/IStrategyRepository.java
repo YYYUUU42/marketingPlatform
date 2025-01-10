@@ -1,6 +1,7 @@
 package com.yu.market.server.raffle.repository;
 
 import com.yu.market.server.raffle.model.bo.StrategyAwardBO;
+import com.yu.market.server.raffle.model.bo.StrategyAwardRuleModelBO;
 import com.yu.market.server.raffle.model.bo.StrategyBO;
 import com.yu.market.server.raffle.model.bo.StrategyRuleBO;
 
@@ -47,6 +48,11 @@ public interface IStrategyRepository {
     /**
      * 查询抽检规则
      */
+    String queryStrategyRuleValue(Long strategyId, String ruleModel);
+
+    /**
+     * 查询抽检规则
+     */
     String queryStrategyRuleValue(Long strategyId, Integer awardId, String ruleModel);
 
     /**
@@ -57,4 +63,9 @@ public interface IStrategyRepository {
      * @return 使用总量
      */
     Integer queryActivityAccountTotalUseCount(String userId, Long strategyId);
+
+    /**
+     * 查询规则模型
+     */
+    StrategyAwardRuleModelBO queryStrategyAwardRuleModelBO(Long strategyId, Integer awardId);
 }

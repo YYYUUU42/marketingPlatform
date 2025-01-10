@@ -1,16 +1,12 @@
-package com.yu.market.server.raffle.service.rule.impl;
+package com.yu.market.server.raffle.service.rule.chain.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.yu.market.common.contants.Constants;
 import com.yu.market.common.exception.ServiceException;
-import com.yu.market.server.raffle.model.annotation.LogicStrategy;
-import com.yu.market.server.raffle.model.bo.RuleActionBO;
-import com.yu.market.server.raffle.model.bo.RuleMatterBO;
-import com.yu.market.server.raffle.model.enums.RuleLogicCheckType;
 import com.yu.market.server.raffle.repository.IStrategyRepository;
-import com.yu.market.server.raffle.service.rule.ILogicFilter;
-import com.yu.market.server.raffle.service.rule.factory.DefaultLogicFactory;
+import com.yu.market.server.raffle.service.armory.IStrategyDispatch;
+import com.yu.market.server.raffle.service.rule.chain.AbstractLogicChain;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -23,37 +19,30 @@ import java.util.*;
  * @date 2025-01-09
  */
 @Slf4j
-@Component
+@Component("rule_weight")
 @RequiredArgsConstructor
-@LogicStrategy(logicMode = DefaultLogicFactory.LogicModel.RULE_WIGHT)
-public class RuleWeightLogicFilter implements ILogicFilter<RuleActionBO.RaffleBeforeBO> {
+public class RuleWeightLogicChain extends AbstractLogicChain {
 
 	private final IStrategyRepository repository;
+	private final IStrategyDispatch strategyDispatch;
 
 
 	/**
 	 * 权重规则过滤；
 	 * 1. 权重规则格式；4000:102,103,104,105 5000:102,103,104,105,106,107 6000:102,103,104,105,106,107,108,109
 	 * 2. 解析数据格式；判断哪个范围符合用户的特定抽奖范围
-	 *
-	 * @param ruleMatterBO 规则物料实体对象
-	 * @return 规则过滤结果
 	 */
 	@Override
-	public RuleActionBO<RuleActionBO.RaffleBeforeBO> filter(RuleMatterBO ruleMatterBO) {
-		log.info("规则过滤-权重范围 userId:{} strategyId:{} ruleModel:{}", ruleMatterBO.getUserId(), ruleMatterBO.getStrategyId(), ruleMatterBO.getRuleModel());
+	public Integer logic(String userId, Long strategyId) {
+		String ruleModel = getRuleModel();
+		log.info("抽奖责任链 - 权重 userId: {} strategyId: {} ruleModel: {}", userId, strategyId, ruleModel);
 
-		String userId = ruleMatterBO.getUserId();
-		Long strategyId = ruleMatterBO.getStrategyId();
-		String ruleValue = repository.queryStrategyRuleValue(ruleMatterBO.getStrategyId(), ruleMatterBO.getAwardId(), ruleMatterBO.getRuleModel());
+		String ruleValue = repository.queryStrategyRuleValue(strategyId, ruleModel);
 
 		// 根据用户ID 查询用户抽奖消耗的积分值
 		Map<Long, String> analyticalValueGroup = getAnalyticalValue(ruleValue);
 		if (CollectionUtil.isEmpty(analyticalValueGroup)) {
-			return RuleActionBO.<RuleActionBO.RaffleBeforeBO>builder()
-					.code(RuleLogicCheckType.ALLOW.getCode())
-					.info(RuleLogicCheckType.ALLOW.getInfo())
-					.build();
+			return null;
 		}
 
 		// 查询用户使用了多少积分
@@ -70,21 +59,15 @@ public class RuleWeightLogicFilter implements ILogicFilter<RuleActionBO.RaffleBe
 				.orElse(null);
 
 		if (value != null) {
-			return RuleActionBO.<RuleActionBO.RaffleBeforeBO>builder()
-					.data(RuleActionBO.RaffleBeforeBO.builder()
-							.strategyId(strategyId)
-							.ruleWeightValueKey(analyticalValueGroup.get(value))
-							.build())
-					.ruleModel(DefaultLogicFactory.LogicModel.RULE_WIGHT.getCode())
-					.code(RuleLogicCheckType.TAKE_OVER.getCode())
-					.info(RuleLogicCheckType.TAKE_OVER.getInfo())
-					.build();
+			Integer awardId = strategyDispatch.getRandomAwardId(strategyId, analyticalValueGroup.get(value));
+			log.info("抽奖责任链 - 权重接管 userId: {} strategyId: {} ruleModel: {} awardId: {}", userId, strategyId, ruleModel, awardId);
+			return awardId;
 		}
 
-		return RuleActionBO.<RuleActionBO.RaffleBeforeBO>builder()
-				.code(RuleLogicCheckType.ALLOW.getCode())
-				.info(RuleLogicCheckType.ALLOW.getInfo())
-				.build();
+		// 过滤其他责任链
+		log.info("抽奖责任链-权重放行 userId: {} strategyId: {} ruleModel: {}", userId, strategyId, ruleModel);
+
+		return next().logic(userId, strategyId);
 	}
 
 	/**
@@ -118,4 +101,8 @@ public class RuleWeightLogicFilter implements ILogicFilter<RuleActionBO.RaffleBe
 		return ruleValueMap;
 	}
 
+	@Override
+	protected String getRuleModel() {
+		return "rule_blacklist";
+	}
 }

@@ -7,6 +7,7 @@ import com.yu.market.common.exception.ServiceException;
 import com.yu.market.common.redis.IRedisService;
 import com.yu.market.server.raffle.mapper.*;
 import com.yu.market.server.raffle.model.bo.StrategyAwardBO;
+import com.yu.market.server.raffle.model.bo.StrategyAwardRuleModelBO;
 import com.yu.market.server.raffle.model.bo.StrategyBO;
 import com.yu.market.server.raffle.model.bo.StrategyRuleBO;
 import com.yu.market.server.raffle.model.pojo.*;
@@ -141,6 +142,11 @@ public class StrategyRepository implements IStrategyRepository {
 				.build();
 	}
 
+	@Override
+	public String queryStrategyRuleValue(Long strategyId, String ruleModel) {
+		return queryStrategyRuleValue(strategyId, null, ruleModel);
+	}
+
 	/**
 	 * 查询抽检规则
 	 */
@@ -179,5 +185,24 @@ public class StrategyRepository implements IStrategyRepository {
 
 		// 返回计算使用量
 		return raffleActivityAccount.getTotalCount() - raffleActivityAccount.getTotalCountSurplus();
+	}
+
+	/**
+	 * 查询规则模型
+	 */
+	@Override
+	public StrategyAwardRuleModelBO queryStrategyAwardRuleModelBO(Long strategyId, Integer awardId) {
+		StrategyAward strategyAward = strategyAwardMapper.selectOne(new LambdaQueryWrapper<StrategyAward>()
+				.eq(StrategyAward::getStrategyId, strategyId)
+				.eq(StrategyAward::getAwardId, awardId));
+
+		String ruleModels = "";
+		if (strategyAward != null) {
+			ruleModels = strategyAward.getRuleModels();
+		}
+
+		return StrategyAwardRuleModelBO.builder()
+				.ruleModels(ruleModels)
+				.build();
 	}
 }

@@ -1,7 +1,7 @@
 package com.yu.market.server.raffle.model.annotation;
 
 
-import com.yu.market.server.raffle.service.rule.factory.DefaultLogicFactory;
+import com.yu.market.server.raffle.service.rule.filter.factory.DefaultLogicFactory;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
