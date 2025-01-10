@@ -79,15 +79,53 @@ public class DefaultRaffleStrategy extends AbstractRaffleStrategy {
 				.build();
 	}
 
+	@Override
+	protected RuleActionBO<RuleActionBO.RaffleCenterBO> doCheckRaffleCenterLogic(RaffleFactorBO raffleFactorBO, String... logics) {
+		if (logics == null || 0 == logics.length) return RuleActionBO.<RuleActionBO.RaffleCenterBO>builder()
+				.code(RuleLogicCheckType.ALLOW.getCode())
+				.info(RuleLogicCheckType.ALLOW.getInfo())
+				.build();
+
+		Map<String, ILogicFilter<RuleActionBO.RaffleCenterBO>> logicFilterGroup = logicFactory.getLogicFilters();
+
+		// 顺序过滤规则
+		for (String ruleModel : logics) {
+			RuleActionBO<RuleActionBO.RaffleCenterBO> ruleResult = applyRuleFilter(
+					raffleFactorBO, logicFilterGroup, ruleModel);
+			log.info("抽奖中规则过滤 userId: {} ruleModel: {} code: {} info: {}",
+					raffleFactorBO.getUserId(), ruleModel, ruleResult.getCode(), ruleResult.getInfo());
+			if (!RuleLogicCheckType.ALLOW.getCode().equals(ruleResult.getCode())) {
+				return ruleResult;
+			}
+		}
+
+		// 所有规则放行
+		return RuleActionBO.<RuleActionBO.RaffleCenterBO>builder()
+				.code(RuleLogicCheckType.ALLOW.getCode())
+				.info(RuleLogicCheckType.ALLOW.getInfo())
+				.build();
+	}
+
+
 	/**
 	 * 应用单个规则过滤逻辑
 	 */
-	private RuleActionBO<RuleActionBO.RaffleBeforeBO> applyRuleFilter(RaffleFactorBO raffleFactorBO,
-																	  Map<String, ILogicFilter<RuleActionBO.RaffleBeforeBO>> logicFilterGroup,
-																	  String ruleModel) {
+	private <T extends RuleActionBO.RaffleBO> RuleActionBO<T> applyRuleFilter(
+			RaffleFactorBO raffleFactorBO,
+			Map<String, ILogicFilter<T>> logicFilterGroup,
+			String ruleModel) {
 
 		// 获取对应的逻辑过滤器
-		ILogicFilter<RuleActionBO.RaffleBeforeBO> logicFilter = logicFilterGroup.get(ruleModel);
+		ILogicFilter<T> logicFilter = logicFilterGroup.get(ruleModel);
+		if (logicFilter == null) {
+			log.warn("未找到对应的逻辑过滤器，ruleModel: {}", ruleModel);
+			return RuleActionBO.<T>builder()
+					.code(RuleLogicCheckType.ALLOW.getCode())
+					.info(RuleLogicCheckType.ALLOW.getInfo())
+					.build();
+		}
+
+		// 构建规则实体
 		RuleMatterBO ruleMatter = RuleMatterBO.builder()
 				.userId(raffleFactorBO.getUserId())
 				.awardId(null)

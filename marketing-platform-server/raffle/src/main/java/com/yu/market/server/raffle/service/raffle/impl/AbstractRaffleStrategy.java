@@ -74,4 +74,6 @@ public abstract class AbstractRaffleStrategy implements IRaffleStrategy {
 
 	protected abstract RuleActionBO<RuleActionBO.RaffleBeforeBO> doCheckRaffleBeforeLogic(RaffleFactorBO raffleFactorBO, String... logics);
 
+	protected abstract RuleActionBO<RuleActionBO.RaffleCenterBO> doCheckRaffleCenterLogic(RaffleFactorBO raffleFactorBO, String... logics);
+
 }

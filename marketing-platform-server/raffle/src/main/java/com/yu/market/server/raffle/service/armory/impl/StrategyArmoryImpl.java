@@ -22,7 +22,7 @@ import static com.yu.market.common.exception.errorCode.BaseErrorCode.STRATEGY_RU
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class StrategyArmoryImpl implements IStrategyArmory , IStrategyDispatch {
+public class StrategyArmoryImpl implements IStrategyArmory {
 
 	private final StrategyRepository repository;
 
@@ -106,26 +106,5 @@ public class StrategyArmoryImpl implements IStrategyArmory , IStrategyDispatch {
 
 		// 存到 Redis 中
 		repository.storeStrategyAwardSearchRateTable(cacheKey, shuffleStrategyAwardSearchRateTable.size(), shuffleStrategyAwardSearchRateTable);
-	}
-
-	/**
-	 * 获取抽奖策略装配的随机结果
-	 */
-	@Override
-	public Integer getRandomAwardId(Long strategyId) {
-		int rateRange = repository.getRateRange(String.valueOf(strategyId));
-
-		return repository.getStrategyAwardAssemble(String.valueOf(strategyId), new SecureRandom().nextInt(rateRange));
-	}
-
-	/**
-	 * 获取抽奖策略装配的随机结果 - 权重
-	 */
-	@Override
-	public Integer getRandomAwardId(Long strategyId, String ruleWeightValue) {
-		String key = String.valueOf(strategyId).concat("_").concat(ruleWeightValue);
-		int rateRange = repository.getRateRange(key);
-
-		return repository.getStrategyAwardAssemble(key, new SecureRandom().nextInt(rateRange));
 	}
 }

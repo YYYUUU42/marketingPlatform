@@ -43,4 +43,18 @@ public class RuleActionBO<T extends RuleActionBO.RaffleBO> {
 		private Integer awardId;
 	}
 
+	/**
+	 * 抽奖中置
+	 */
+	static public class RaffleCenterBO extends RaffleBO {
+
+	}
+
+	/**
+	 * 抽奖后置
+	 */
+	static public class RaffleAfterBO extends RaffleBO {
+
+	}
+
 }
