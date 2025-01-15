@@ -2,7 +2,7 @@ package com.yu.market.server.raffle.service.rule.filter.factory;
 
 import com.yu.market.server.raffle.model.annotation.LogicStrategy;
 import com.yu.market.server.raffle.model.bo.RuleActionBO;
-import com.yu.market.server.raffle.service.rule.ILogicFilter;
+import com.yu.market.server.raffle.service.rule.filter.ILogicFilter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.core.annotation.AnnotationUtils;

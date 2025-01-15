@@ -6,7 +6,7 @@ import com.yu.market.server.raffle.model.bo.RuleMatterBO;
 import com.yu.market.server.raffle.model.enums.RuleLogicCheckType;
 import com.yu.market.server.raffle.repository.IStrategyRepository;
 import com.yu.market.server.raffle.service.armory.IStrategyDispatch;
-import com.yu.market.server.raffle.service.rule.ILogicFilter;
+import com.yu.market.server.raffle.service.rule.filter.ILogicFilter;
 import com.yu.market.server.raffle.service.rule.chain.factory.DefaultChainFactory;
 import com.yu.market.server.raffle.service.rule.filter.factory.DefaultLogicFactory;
 import jakarta.annotation.Resource;
