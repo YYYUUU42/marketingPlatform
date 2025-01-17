@@ -10,6 +10,6 @@ import com.yu.market.server.raffle.service.rule.tree.factory.DefaultTreeFactory;
  */
 public interface IDecisionTreeEngine {
 
-    DefaultTreeFactory.StrategyAwardData process(String userId, Long strategyId, Integer awardId);
+    DefaultTreeFactory.StrategyAward process(String userId, Long strategyId, Integer awardId);
 
 }

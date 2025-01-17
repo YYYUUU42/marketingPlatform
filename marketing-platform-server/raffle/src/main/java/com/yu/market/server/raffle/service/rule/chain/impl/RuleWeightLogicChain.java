@@ -7,6 +7,7 @@ import com.yu.market.common.exception.ServiceException;
 import com.yu.market.server.raffle.repository.IStrategyRepository;
 import com.yu.market.server.raffle.service.armory.IStrategyDispatch;
 import com.yu.market.server.raffle.service.rule.chain.AbstractLogicChain;
+import com.yu.market.server.raffle.service.rule.chain.factory.DefaultChainFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,7 @@ public class RuleWeightLogicChain extends AbstractLogicChain {
 	 * 2. 解析数据格式；判断哪个范围符合用户的特定抽奖范围
 	 */
 	@Override
-	public Integer logic(String userId, Long strategyId) {
+	public DefaultChainFactory.StrategyAward logic(String userId, Long strategyId) {
 		String ruleModel = getRuleModel();
 		log.info("抽奖责任链 - 权重 userId: {} strategyId: {} ruleModel: {}", userId, strategyId, ruleModel);
 
@@ -61,7 +62,10 @@ public class RuleWeightLogicChain extends AbstractLogicChain {
 		if (value != null) {
 			Integer awardId = strategyDispatch.getRandomAwardId(strategyId, analyticalValueGroup.get(value));
 			log.info("抽奖责任链 - 权重接管 userId: {} strategyId: {} ruleModel: {} awardId: {}", userId, strategyId, ruleModel, awardId);
-			return awardId;
+			return DefaultChainFactory.StrategyAward.builder()
+					.awardId(awardId)
+					.logicModel(getRuleModel())
+					.build();
 		}
 
 		// 过滤其他责任链
@@ -103,6 +107,6 @@ public class RuleWeightLogicChain extends AbstractLogicChain {
 
 	@Override
 	protected String getRuleModel() {
-		return "rule_blacklist";
+		return DefaultChainFactory.LogicModel.RULE_WEIGHT.getCode();
 	}
 }

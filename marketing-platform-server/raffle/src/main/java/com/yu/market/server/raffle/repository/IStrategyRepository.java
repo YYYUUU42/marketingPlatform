@@ -1,9 +1,6 @@
 package com.yu.market.server.raffle.repository;
 
-import com.yu.market.server.raffle.model.bo.StrategyAwardBO;
-import com.yu.market.server.raffle.model.bo.StrategyAwardRuleModelBO;
-import com.yu.market.server.raffle.model.bo.StrategyBO;
-import com.yu.market.server.raffle.model.bo.StrategyRuleBO;
+import com.yu.market.server.raffle.model.bo.*;
 
 import java.util.List;
 import java.util.Map;
@@ -68,4 +65,12 @@ public interface IStrategyRepository {
      * 查询规则模型
      */
     StrategyAwardRuleModelBO queryStrategyAwardRuleModelBO(Long strategyId, Integer awardId);
+
+    /**
+     * 根据规则树ID，查询树结构信息
+     *
+     * @param treeId 规则树ID
+     * @return 树结构信息
+     */
+    RuleTreeBO queryRuleTreeBoByTreeId(String treeId);
 }

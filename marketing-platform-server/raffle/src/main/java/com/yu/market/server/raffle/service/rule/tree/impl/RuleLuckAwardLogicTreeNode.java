@@ -28,7 +28,7 @@ public class RuleLuckAwardLogicTreeNode implements ILogicTreeNode {
         log.info("执行兜底奖励节点逻辑 - 用户ID: {}, 策略ID: {}, 奖励ID: {}", userId, strategyId, awardId);
 
         // 兜底奖励逻辑，提供默认奖励
-        DefaultTreeFactory.StrategyAwardData awardData = DefaultTreeFactory.StrategyAwardData.builder()
+        DefaultTreeFactory.StrategyAward awardData = DefaultTreeFactory.StrategyAward.builder()
                 .awardId(101) // 默认奖励ID
                 .awardRuleValue("1,100") // 默认奖励规则
                 .build();

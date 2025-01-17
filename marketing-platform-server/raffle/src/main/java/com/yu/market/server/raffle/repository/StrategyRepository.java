@@ -6,16 +6,16 @@ import com.yu.market.common.contants.RedisKey;
 import com.yu.market.common.exception.ServiceException;
 import com.yu.market.common.redis.IRedisService;
 import com.yu.market.server.raffle.mapper.*;
-import com.yu.market.server.raffle.model.bo.StrategyAwardBO;
-import com.yu.market.server.raffle.model.bo.StrategyAwardRuleModelBO;
-import com.yu.market.server.raffle.model.bo.StrategyBO;
-import com.yu.market.server.raffle.model.bo.StrategyRuleBO;
+import com.yu.market.server.raffle.model.bo.*;
+import com.yu.market.server.raffle.model.enums.RuleLimitType;
+import com.yu.market.server.raffle.model.enums.RuleLogicCheckType;
 import com.yu.market.server.raffle.model.pojo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author yu
@@ -32,6 +32,9 @@ public class StrategyRepository implements IStrategyRepository {
 	private final RaffleActivityMapper raffleActivityMapper;
 	private final RaffleActivityAccountMapper raffleActivityAccountMapper;
 	private final IRedisService redisService;
+	private final RuleTreeMapper ruleTreeMapper;
+	private final RuleTreeNodeLineMapper ruleTreeNodeLineMapper;
+	private final RuleTreeNodeMapper ruleTreeNodeMapper;
 
 	/**
 	 * 查询策略奖项列表（优先缓存，次选数据库）
@@ -204,5 +207,61 @@ public class StrategyRepository implements IStrategyRepository {
 		return StrategyAwardRuleModelBO.builder()
 				.ruleModels(ruleModels)
 				.build();
+	}
+
+	/**
+	 * 根据规则树ID，查询树结构信息
+	 *
+	 * @param treeId 规则树ID
+	 * @return 树结构信息
+	 */
+	@Override
+	public RuleTreeBO queryRuleTreeBoByTreeId(String treeId) {
+		// 优先缓存
+		String cacheKey = RedisKey.RULE_TREE_BO_KEY + treeId;
+		RuleTreeBO ruleTreeBoCache = redisService.getValue(cacheKey);
+		if (ruleTreeBoCache != null) {
+			return ruleTreeBoCache;
+		}
+
+		// 查数据库
+		RuleTree ruleTree = ruleTreeMapper.selectOne(new LambdaQueryWrapper<RuleTree>().eq(RuleTree::getTreeId, treeId));
+		List<RuleTreeNode> ruleTreeNodes = ruleTreeNodeMapper.selectList(new LambdaQueryWrapper<RuleTreeNode>().eq(RuleTreeNode::getTreeId, treeId));
+		List<RuleTreeNodeLine> ruleTreeNodeLines = ruleTreeNodeLineMapper.selectList(new LambdaQueryWrapper<RuleTreeNodeLine>().eq(RuleTreeNodeLine::getTreeId, treeId));
+
+		// tree node line 转换 Map 结构
+		Map<String, List<RuleTreeNodeLineBO>> ruleTreeNodeLineMap = ruleTreeNodeLines.stream()
+				.map(line -> RuleTreeNodeLineBO.builder()
+						.treeId(line.getTreeId())
+						.ruleNodeFrom(line.getRuleNodeFrom())
+						.ruleNodeTo(line.getRuleNodeTo())
+						.ruleLimitType(RuleLimitType.valueOf(line.getRuleLimitType()))
+						.ruleLimitValue(RuleLogicCheckType.valueOf(line.getRuleLimitValue()))
+						.build())
+				.collect(Collectors.groupingBy(RuleTreeNodeLineBO::getRuleNodeFrom));
+
+		// tree node 转换为 Map 结构
+		Map<String, RuleTreeNodeBO> treeNodeMap = ruleTreeNodes.stream()
+				.map(node -> RuleTreeNodeBO.builder()
+						.treeId(node.getTreeId())
+						.ruleKey(node.getRuleKey())
+						.ruleDesc(node.getRuleDesc())
+						.ruleValue(node.getRuleValue())
+						.treeNodeLineBOList(ruleTreeNodeLineMap.get(node.getRuleKey()))
+						.build())
+				.collect(Collectors.toMap(RuleTreeNodeBO::getRuleKey, nodeBO -> nodeBO));
+
+		// 构建规则树对象
+		RuleTreeBO ruleTreeBO = RuleTreeBO.builder()
+				.treeId(ruleTree.getTreeId())
+				.treeName(ruleTree.getTreeName())
+				.treeDesc(ruleTree.getTreeDesc())
+				.treeRootRuleNode(ruleTree.getTreeNodeRuleKey())
+				.treeNodeMap(treeNodeMap)
+				.build();
+
+		redisService.setValue(cacheKey, ruleTreeBO);
+
+		return ruleTreeBO;
 	}
 }

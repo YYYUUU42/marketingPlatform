@@ -48,8 +48,8 @@ public class DecisionTreeEngine implements IDecisionTreeEngine {
 	 * 执行决策树逻辑，遍历规则节点并返回最终的奖励结果
 	 */
 	@Override
-	public DefaultTreeFactory.StrategyAwardData process(String userId, Long strategyId, Integer awardId) {
-		DefaultTreeFactory.StrategyAwardData strategyAwardData = null;
+	public DefaultTreeFactory.StrategyAward process(String userId, Long strategyId, Integer awardId) {
+		DefaultTreeFactory.StrategyAward strategyAwardData = null;
 
 		// 获取决策树的初始节点（根节点）
 		String currentNodeKey = ruleTreeBO.getTreeRootRuleNode();

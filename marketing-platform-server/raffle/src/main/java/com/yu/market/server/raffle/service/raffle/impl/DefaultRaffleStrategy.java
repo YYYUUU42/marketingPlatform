@@ -1,19 +1,16 @@
 package com.yu.market.server.raffle.service.raffle.impl;
 
-import com.yu.market.server.raffle.model.bo.RaffleFactorBO;
-import com.yu.market.server.raffle.model.bo.RuleActionBO;
-import com.yu.market.server.raffle.model.bo.RuleMatterBO;
-import com.yu.market.server.raffle.model.enums.RuleLogicCheckType;
+import com.yu.market.common.exception.ServiceException;
+import com.yu.market.server.raffle.model.bo.*;
 import com.yu.market.server.raffle.repository.IStrategyRepository;
 import com.yu.market.server.raffle.service.armory.IStrategyDispatch;
-import com.yu.market.server.raffle.service.rule.filter.ILogicFilter;
+import com.yu.market.server.raffle.service.rule.chain.ILogicChain;
 import com.yu.market.server.raffle.service.rule.chain.factory.DefaultChainFactory;
-import com.yu.market.server.raffle.service.rule.filter.factory.DefaultLogicFactory;
-import jakarta.annotation.Resource;
+import com.yu.market.server.raffle.service.rule.tree.factory.DefaultTreeFactory;
+import com.yu.market.server.raffle.service.rule.tree.factory.engine.IDecisionTreeEngine;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
 
 /**
  * @author yu
@@ -24,70 +21,29 @@ import java.util.*;
 @Service
 public class DefaultRaffleStrategy extends AbstractRaffleStrategy {
 
-	@Resource
-	private DefaultLogicFactory logicFactory;
-
-	public DefaultRaffleStrategy(IStrategyRepository repository, IStrategyDispatch strategyDispatch, DefaultChainFactory defaultChainFactory) {
-		super(repository, strategyDispatch, defaultChainFactory);
+	public DefaultRaffleStrategy(IStrategyRepository repository, IStrategyDispatch strategyDispatch, DefaultChainFactory defaultChainFactory, DefaultTreeFactory defaultTreeFactory) {
+		super(repository, strategyDispatch, defaultChainFactory, defaultTreeFactory);
 	}
 
 	@Override
-	protected RuleActionBO<RuleActionBO.RaffleCenterBO> doCheckRaffleCenterLogic(RaffleFactorBO raffleFactorBO, String... logics) {
-		if (logics == null || logics.length == 0) {
-			return RuleActionBO.<RuleActionBO.RaffleCenterBO>builder()
-					.code(RuleLogicCheckType.ALLOW.getCode())
-					.info(RuleLogicCheckType.ALLOW.getInfo())
-					.build();
-		}
-
-		Map<String, ILogicFilter<RuleActionBO.RaffleCenterBO>> logicFilterGroup = logicFactory.getLogicFilters();
-
-		// 顺序过滤规则
-		for (String ruleModel : logics) {
-			RuleActionBO<RuleActionBO.RaffleCenterBO> ruleResult = applyRuleFilter(
-					raffleFactorBO, logicFilterGroup, ruleModel);
-			log.info("抽奖中规则过滤 userId: {} ruleModel: {} code: {} info: {}",
-					raffleFactorBO.getUserId(), ruleModel, ruleResult.getCode(), ruleResult.getInfo());
-			if (!RuleLogicCheckType.ALLOW.getCode().equals(ruleResult.getCode())) {
-				return ruleResult;
-			}
-		}
-
-		// 所有规则放行
-		return RuleActionBO.<RuleActionBO.RaffleCenterBO>builder()
-				.code(RuleLogicCheckType.ALLOW.getCode())
-				.info(RuleLogicCheckType.ALLOW.getInfo())
-				.build();
+	public DefaultChainFactory.StrategyAward raffleLogicChain(String userId, Long strategyId) {
+		ILogicChain logicChain = defaultChainFactory.openLogicChain(strategyId);
+		return logicChain.logic(userId, strategyId);
 	}
 
-
-	/**
-	 * 应用单个规则过滤逻辑
-	 */
-	private <T extends RuleActionBO.RaffleBO> RuleActionBO<T> applyRuleFilter(
-			RaffleFactorBO raffleFactorBO,
-			Map<String, ILogicFilter<T>> logicFilterGroup,
-			String ruleModel) {
-
-		// 获取对应的逻辑过滤器
-		ILogicFilter<T> logicFilter = logicFilterGroup.get(ruleModel);
-		if (logicFilter == null) {
-			log.warn("未找到对应的逻辑过滤器，ruleModel: {}", ruleModel);
-			return RuleActionBO.<T>builder()
-					.code(RuleLogicCheckType.ALLOW.getCode())
-					.info(RuleLogicCheckType.ALLOW.getInfo())
-					.build();
+	@Override
+	public DefaultTreeFactory.StrategyAward raffleLogicTree(String userId, Long strategyId, Integer awardId) {
+		StrategyAwardRuleModelBO strategyAwardRuleModelVO = repository.queryStrategyAwardRuleModelBO(strategyId, awardId);
+		if (strategyAwardRuleModelVO == null) {
+			return DefaultTreeFactory.StrategyAward.builder().awardId(awardId).build();
 		}
 
-		// 构建规则实体
-		RuleMatterBO ruleMatter = RuleMatterBO.builder()
-				.userId(raffleFactorBO.getUserId())
-				.awardId(null)
-				.strategyId(raffleFactorBO.getStrategyId())
-				.ruleModel(ruleModel)
-				.build();
+		RuleTreeBO ruleTreeVO = repository.queryRuleTreeBoByTreeId(strategyAwardRuleModelVO.getRuleModels());
+		if (ruleTreeVO == null) {
+			throw new ServiceException("存在抽奖策略配置的规则模型 Key，未在库表 rule_tree、rule_tree_node、rule_tree_line 配置对应的规则树信息 " + strategyAwardRuleModelVO.getRuleModels());
+		}
 
-		// 执行规则过滤
-		return logicFilter.filter(ruleMatter);
+		IDecisionTreeEngine treeEngine = defaultTreeFactory.createDecisionTreeEngine(ruleTreeVO);
+		return treeEngine.process(userId, strategyId, awardId);
 	}
 }
