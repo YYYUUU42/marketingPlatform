@@ -10,4 +10,9 @@ import com.yu.market.server.raffle.model.pojo.StrategyAward;
 */
 public interface StrategyAwardMapper extends BaseMapper<StrategyAward> {
 
+	/**
+	 * 库存减一
+	 */
+	void updateStrategyAwardStock(StrategyAward strategyAward);
+
 }

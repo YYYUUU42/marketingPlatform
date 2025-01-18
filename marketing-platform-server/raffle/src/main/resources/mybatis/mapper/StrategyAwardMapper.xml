@@ -25,4 +25,12 @@
         award_count_surplus,award_rate,rule_models,
         sort,create_time,update_time
     </sql>
+
+    <update id="updateStrategyAwardStock" parameterType="com.yu.market.server.raffle.model.pojo.StrategyAward">
+        update strategy_award
+        set award_count_surplus = award_count_surplus - 1
+        where strategy_id = #{strategyId}
+          and award_id = #{awardId}
+          and award_count_surplus > 0
+    </update>
 </mapper>

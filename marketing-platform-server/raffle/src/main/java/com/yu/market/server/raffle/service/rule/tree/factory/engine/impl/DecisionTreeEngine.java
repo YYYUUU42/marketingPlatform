@@ -71,9 +71,9 @@ public class DecisionTreeEngine implements IDecisionTreeEngine {
 			}
 
 			// 执行逻辑节点的决策计算
-			DefaultTreeFactory.TreeActionBO logicBO = logicTreeNode.logic(userId, strategyId, awardId);
+			DefaultTreeFactory.TreeActionBO logicBO = logicTreeNode.logic(userId, strategyId, awardId, currentNode.getRuleValue());
 			RuleLogicCheckType ruleLogicCheckTypeBO = logicBO.getRuleLogicCheckType();
-			strategyAwardData = logicBO.getStrategyAwardData();
+			strategyAwardData = logicBO.getStrategyAward();
 
 			log.info("决策树引擎【{}】treeId:{} node:{} code:{}", ruleTreeBO.getTreeName(), ruleTreeBO.getTreeId(), currentNode, ruleLogicCheckTypeBO.getCode());
 

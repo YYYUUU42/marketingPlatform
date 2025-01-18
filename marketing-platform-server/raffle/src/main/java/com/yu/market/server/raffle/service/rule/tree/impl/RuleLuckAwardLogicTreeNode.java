@@ -1,5 +1,6 @@
 package com.yu.market.server.raffle.service.rule.tree.impl;
 
+import com.yu.market.common.contants.Constants;
 import com.yu.market.server.raffle.model.enums.RuleLogicCheckType;
 import com.yu.market.server.raffle.service.rule.tree.ILogicTreeNode;
 import com.yu.market.server.raffle.service.rule.tree.factory.DefaultTreeFactory;
@@ -24,20 +25,25 @@ public class RuleLuckAwardLogicTreeNode implements ILogicTreeNode {
      * @return 决策结果
      */
     @Override
-    public DefaultTreeFactory.TreeActionBO logic(String userId, Long strategyId, Integer awardId) {
-        log.info("执行兜底奖励节点逻辑 - 用户ID: {}, 策略ID: {}, 奖励ID: {}", userId, strategyId, awardId);
+    public DefaultTreeFactory.TreeActionBO logic(String userId, Long strategyId, Integer awardId, String ruleValue) {
+        log.info("规则过滤-兜底奖品 userId:{} strategyId:{} awardId:{} ruleValue:{}", userId, strategyId, awardId, ruleValue);
+        String[] split = ruleValue.split(Constants.COLON);
+        if (split.length == 0) {
+            log.error("规则过滤-兜底奖品，兜底奖品未配置告警 userId:{} strategyId:{} awardId:{}", userId, strategyId, awardId);
+            throw new RuntimeException("兜底奖品未配置 " + ruleValue);
+        }
+        // 兜底奖励配置
+        Integer luckAwardId = Integer.valueOf(split[0]);
+        String awardRuleValue = split.length > 1 ? split[1] : "";
 
-        // 兜底奖励逻辑，提供默认奖励
-        DefaultTreeFactory.StrategyAward awardData = DefaultTreeFactory.StrategyAward.builder()
-                .awardId(101) // 默认奖励ID
-                .awardRuleValue("1,100") // 默认奖励规则
-                .build();
-
-        log.info("兜底奖励生成 - 奖励ID: {}, 奖励规则: {}", awardData.getAwardId(), awardData.getAwardRuleValue());
-
+        // 返回兜底奖品
+        log.info("规则过滤-兜底奖品 userId:{} strategyId:{} awardId:{} awardRuleValue:{}", userId, strategyId, luckAwardId, awardRuleValue);
         return DefaultTreeFactory.TreeActionBO.builder()
                 .ruleLogicCheckType(RuleLogicCheckType.TAKE_OVER)
-                .strategyAwardData(awardData)
+                .strategyAward(DefaultTreeFactory.StrategyAward.builder()
+                        .awardId(luckAwardId)
+                        .awardRuleValue(awardRuleValue)
+                        .build())
                 .build();
     }
 }

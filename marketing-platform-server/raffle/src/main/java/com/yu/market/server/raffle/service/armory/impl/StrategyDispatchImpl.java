@@ -1,5 +1,7 @@
 package com.yu.market.server.raffle.service.armory.impl;
 
+import com.yu.market.common.contants.Constants;
+import com.yu.market.common.contants.RedisKey;
 import com.yu.market.server.raffle.repository.IStrategyRepository;
 import com.yu.market.server.raffle.service.armory.IStrategyDispatch;
 import lombok.RequiredArgsConstructor;
@@ -32,5 +34,11 @@ public class StrategyDispatchImpl implements IStrategyDispatch {
 		int rateRange = repository.getRateRange(key);
 
 		return repository.getStrategyAwardAssemble(key, new SecureRandom().nextInt(rateRange));
+	}
+
+	@Override
+	public Boolean subtractionAwardStock(Long strategyId, Integer awardId) {
+		String cacheKey = RedisKey.STRATEGY_AWARD_COUNT_KEY + strategyId + Constants.UNDERLINE + awardId;
+		return repository.subtractionAwardStock(cacheKey);
 	}
 }

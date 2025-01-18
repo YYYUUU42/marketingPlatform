@@ -2,19 +2,19 @@ package com.yu.market.server.raffle.service.armory.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yu.market.common.contants.Constants;
+import com.yu.market.common.contants.RedisKey;
 import com.yu.market.common.exception.ServiceException;
 import com.yu.market.server.raffle.model.bo.StrategyAwardBO;
 import com.yu.market.server.raffle.model.bo.StrategyBO;
 import com.yu.market.server.raffle.model.bo.StrategyRuleBO;
 import com.yu.market.server.raffle.repository.StrategyRepository;
 import com.yu.market.server.raffle.service.armory.IStrategyArmory;
-import com.yu.market.server.raffle.service.armory.IStrategyDispatch;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.*;
-import java.security.SecureRandom;
 import java.util.*;
 
 import static com.yu.market.common.exception.errorCode.BaseErrorCode.STRATEGY_RULE_WEIGHT_IS_NULL;
@@ -37,37 +37,50 @@ public class StrategyArmoryImpl implements IStrategyArmory {
 		// 查询策略配置
 		List<StrategyAwardBO> strategyAwardBOList = repository.queryStrategyAwardList(strategyId);
 		if (CollectionUtil.isEmpty(strategyAwardBOList)) {
-			// 策略中没有配置奖品，策略配置无效
+			log.warn("策略配置为空，无法装配抽奖策略，策略ID: {}", strategyId);
 			return false;
 		}
+
+		// 缓存奖品库存 - 用于 Redis 扣减库存
+		for (StrategyAwardBO strategyAward : strategyAwardBOList) {
+			Integer awardId = strategyAward.getAwardId();
+			Integer awardCount = strategyAward.getAwardCount();
+			cacheStrategyAwardCount(strategyId, awardId, awardCount);
+		}
+
+		// 默认装配配置 - 全量抽奖概率
+		assembleLotteryStrategy(String.valueOf(strategyId), strategyAwardBOList);
 
 		// 查询权重策略配置
 		StrategyBO strategyBO = repository.queryStrategyBOByStrategyId(strategyId);
 		String ruleWeight = strategyBO.getRuleWeight();
 		if (StrUtil.isBlank(ruleWeight)) {
+			log.info("策略没有配置权重规则，直接跳过权重装配，策略ID: {}", strategyId);
 			return true;
 		}
 
 		// 查询策略规则中 rule_weight 权重规则
 		StrategyRuleBO strategyRuleBO = repository.queryStrategyRule(strategyId, ruleWeight);
 		if (strategyRuleBO == null) {
+			log.warn("策略规则中 rule_weight 权重规则已适用但未配置 - 策略ID: {}, 权重规则: {}", strategyId, ruleWeight);
 			throw new ServiceException(STRATEGY_RULE_WEIGHT_IS_NULL);
 		}
 
+		// 按照权重规则装配策略
 		Map<String, List<Integer>> ruleWeightValueMap = strategyRuleBO.getRuleWeightValues();
 		ruleWeightValueMap.forEach((key, ruleWeightValues) -> {
 			List<StrategyAwardBO> strategyAwardBOS = strategyAwardBOList.stream()
 					.filter(strategyAward -> ruleWeightValues.contains(strategyAward.getAwardId()))
 					.toList();
 
-			assembleLotteryStrategy(strategyId + "_" + key, strategyAwardBOS);
+			assembleLotteryStrategy(String.valueOf(strategyId).concat(Constants.UNDERLINE).concat(key), strategyAwardBOS);
 		});
 
 		return true;
 	}
 
 	/**
-	 *
+	 * 装配抽奖策略并存储到 Redis
 	 */
 	private void assembleLotteryStrategy(String cacheKey, List<StrategyAwardBO> strategyAwardBOList) {
 		// 获取最小概率值
@@ -106,5 +119,17 @@ public class StrategyArmoryImpl implements IStrategyArmory {
 
 		// 存到 Redis 中
 		repository.storeStrategyAwardSearchRateTable(cacheKey, shuffleStrategyAwardSearchRateTable.size(), shuffleStrategyAwardSearchRateTable);
+	}
+
+	/**
+	 * 缓存奖品库存到Redis
+	 *
+	 * @param strategyId 策略ID
+	 * @param awardId    奖品ID
+	 * @param awardCount 奖品库存
+	 */
+	private void cacheStrategyAwardCount(Long strategyId, Integer awardId, Integer awardCount) {
+		String cacheKey = RedisKey.STRATEGY_AWARD_COUNT_KEY + strategyId + Constants.UNDERLINE + awardId;
+		repository.cacheStrategyAwardCount(cacheKey, awardCount);
 	}
 }

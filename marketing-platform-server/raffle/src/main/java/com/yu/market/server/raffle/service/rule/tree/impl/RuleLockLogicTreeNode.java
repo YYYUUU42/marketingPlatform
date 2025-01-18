@@ -15,22 +15,27 @@ import org.springframework.stereotype.Component;
 @Component("rule_lock")
 public class RuleLockLogicTreeNode implements ILogicTreeNode {
 
-    /**
+
+	/**
      * 执行次数锁节点逻辑
      *
-     * @param userId    用户ID
-     * @param strategyId 策略ID
-     * @param awardId   奖励ID
      * @return 决策结果
      */
     @Override
-    public DefaultTreeFactory.TreeActionBO logic(String userId, Long strategyId, Integer awardId) {
+    public DefaultTreeFactory.TreeActionBO logic(String userId, Long strategyId, Integer awardId, String ruleValue) {
         log.info("执行次数锁节点逻辑 - 用户ID: {}, 策略ID: {}, 奖励ID: {}", userId, strategyId, awardId);
 
-        // TODO: 次数限制逻辑
-        boolean isAllowed = true;
+        long raffleCount = 0L;
+        try {
+            raffleCount = Long.parseLong(ruleValue);
+        } catch (Exception e) {
+            throw new RuntimeException("规则过滤-次数锁异常 ruleValue: " + ruleValue + " 配置不正确");
+        }
 
-        if (isAllowed) {
+
+		// todo 用户抽奖次数
+		long userRaffleCount = 10L;
+		if (userRaffleCount >= raffleCount) {
             log.info("用户通过次数限制规则 - 用户ID: {}, 策略ID: {}", userId, strategyId);
             return DefaultTreeFactory.TreeActionBO.builder()
                     .ruleLogicCheckType(RuleLogicCheckType.ALLOW)

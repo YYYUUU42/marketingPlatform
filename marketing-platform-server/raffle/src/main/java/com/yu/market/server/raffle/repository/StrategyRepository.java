@@ -2,6 +2,7 @@ package com.yu.market.server.raffle.repository;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.yu.market.common.contants.Constants;
 import com.yu.market.common.contants.RedisKey;
 import com.yu.market.common.exception.ServiceException;
 import com.yu.market.common.redis.IRedisService;
@@ -11,10 +12,14 @@ import com.yu.market.server.raffle.model.enums.RuleLimitType;
 import com.yu.market.server.raffle.model.enums.RuleLogicCheckType;
 import com.yu.market.server.raffle.model.pojo.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RBlockingQueue;
+import org.redisson.api.RDelayedQueue;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -22,6 +27,7 @@ import java.util.stream.Collectors;
  * @description 策略服务仓储实现类
  * @date 2025-01-07
  */
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class StrategyRepository implements IStrategyRepository {
@@ -263,5 +269,105 @@ public class StrategyRepository implements IStrategyRepository {
 		redisService.setValue(cacheKey, ruleTreeBO);
 
 		return ruleTreeBO;
+	}
+
+	/**
+	 * 缓存奖品库存
+	 *
+	 * @param cacheKey   key
+	 * @param awardCount 库存值
+	 */
+	@Override
+	public void cacheStrategyAwardCount(String cacheKey, Integer awardCount) {
+		if (!redisService.isExists(cacheKey)) {
+			redisService.setAtomicLong(cacheKey, awardCount);
+		}
+	}
+
+	/**
+	 * 缓存 key，decr 方式扣减库存
+	 *
+	 * @param cacheKey 缓存Key
+	 * @return 扣减结果
+	 */
+	@Override
+	public Boolean subtractionAwardStock(String cacheKey) {
+		// 扣减库存
+		long stock = redisService.decr(cacheKey);
+
+		// 如果库存小于0，恢复库存为0并返回 false
+		if (stock < 0) {
+			redisService.setValue(cacheKey, 0);
+			log.warn("库存小于0，已恢复库存为0，缓存Key: {}", cacheKey);
+			return false;
+		}
+
+		// 生成库存锁的 key
+		String lockKey = cacheKey + Constants.UNDERLINE + stock;
+
+		// 尝试加锁，如果加锁失败，返回 false
+		Boolean lock = redisService.setNx(lockKey);
+		if (!lock) {
+			log.info("策略奖品库存加锁失败，lockKey: {}", lockKey);
+			return false;
+		}
+
+		log.info("成功加锁，lockKey: {}", lockKey);
+		return true;
+	}
+
+	/**
+	 * 写入奖品库存消费队列
+	 */
+	@Override
+	public void awardStockConsumeSendQueue(StrategyAwardStockKeyBO strategyAwardStockKeyVO) {
+		// 获取 Redis 阻塞队列
+		String cacheKey = RedisKey.STRATEGY_AWARD_COUNT_QUERY_KEY;
+		RBlockingQueue<StrategyAwardStockKeyBO> blockingQueue = redisService.getBlockingQueue(cacheKey);
+		if (blockingQueue == null) {
+			log.error("获取 Redis 阻塞队列失败，cacheKey: {}", cacheKey);
+			return;
+		}
+
+		// 获取 Redis 延时队列，并设置延迟时间为3秒
+		RDelayedQueue<StrategyAwardStockKeyBO> delayedQueue = redisService.getDelayedQueue(blockingQueue);
+		delayedQueue.offer(strategyAwardStockKeyVO, 3, TimeUnit.SECONDS);
+	}
+
+	/**
+	 * 获取奖品库存消费队列
+	 */
+	@Override
+	public StrategyAwardStockKeyBO takeQueueValue() {
+
+		// 获取 Redis 阻塞队列
+		String cacheKey = RedisKey.STRATEGY_AWARD_COUNT_QUERY_KEY;
+		RBlockingQueue<StrategyAwardStockKeyBO> destinationQueue = redisService.getBlockingQueue(cacheKey);
+		if (destinationQueue == null) {
+			log.error("获取 Redis 阻塞队列失败，cacheKey: {}", cacheKey);
+			return null;
+		}
+
+		// 从队列中取出数据
+		StrategyAwardStockKeyBO strategyAwardStockKeyVO = destinationQueue.poll();
+		if (strategyAwardStockKeyVO == null) {
+			log.warn("队列为空，无法获取奖品库存数据，cacheKey: {}", cacheKey);
+		} else {
+			log.info("成功从队列中取出奖品库存数据，cacheKey: {}", cacheKey);
+		}
+
+		return strategyAwardStockKeyVO;
+	}
+
+	/**
+	 * 更新奖品库存消耗
+	 */
+	@Override
+	public void updateStrategyAwardStock(Long strategyId, Integer awardId) {
+		StrategyAward strategyAward = new StrategyAward();
+		strategyAward.setStrategyId(strategyId);
+		strategyAward.setAwardId(awardId);
+
+		strategyAwardMapper.updateStrategyAwardStock(strategyAward);
 	}
 }

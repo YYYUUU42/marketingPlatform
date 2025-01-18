@@ -1,5 +1,6 @@
 package com.yu.market.server.raffle.repository;
 
+import com.yu.market.common.exception.ServiceException;
 import com.yu.market.server.raffle.model.bo.*;
 
 import java.util.List;
@@ -73,4 +74,35 @@ public interface IStrategyRepository {
      * @return 树结构信息
      */
     RuleTreeBO queryRuleTreeBoByTreeId(String treeId);
+
+    /**
+     * 缓存奖品库存
+     *
+     * @param cacheKey   key
+     * @param awardCount 库存值
+     */
+    void cacheStrategyAwardCount(String cacheKey, Integer awardCount);
+
+    /**
+     * 缓存key，decr 方式扣减库存
+     *
+     * @param cacheKey 缓存Key
+     * @return 扣减结果
+     */
+    Boolean subtractionAwardStock(String cacheKey);
+
+    /**
+     * 写入奖品库存消费队列
+     */
+    void awardStockConsumeSendQueue(StrategyAwardStockKeyBO strategyAwardStockKeyVO);
+
+    /**
+     * 获取奖品库存消费队列
+     */
+    StrategyAwardStockKeyBO takeQueueValue() throws ServiceException;
+
+    /**
+     * 更新奖品库存消耗
+     */
+    void updateStrategyAwardStock(Long strategyId, Integer awardId);
 }

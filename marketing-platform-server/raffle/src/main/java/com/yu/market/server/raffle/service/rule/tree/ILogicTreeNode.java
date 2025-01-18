@@ -9,6 +9,6 @@ import com.yu.market.server.raffle.service.rule.tree.factory.DefaultTreeFactory;
  */
 public interface ILogicTreeNode {
 
-	DefaultTreeFactory.TreeActionBO logic(String userId, Long strategyId, Integer awardId);
+	DefaultTreeFactory.TreeActionBO logic(String userId, Long strategyId, Integer awardId, String ruleValue);
 
 }

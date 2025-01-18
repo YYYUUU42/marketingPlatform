@@ -7,6 +7,7 @@ import com.yu.market.server.raffle.model.bo.RaffleAwardBO;
 import com.yu.market.server.raffle.model.bo.RaffleFactorBO;
 import com.yu.market.server.raffle.repository.IStrategyRepository;
 import com.yu.market.server.raffle.service.armory.IStrategyDispatch;
+import com.yu.market.server.raffle.service.raffle.IRaffleStock;
 import com.yu.market.server.raffle.service.raffle.IRaffleStrategy;
 import com.yu.market.server.raffle.service.rule.chain.factory.DefaultChainFactory;
 import com.yu.market.server.raffle.service.rule.tree.factory.DefaultTreeFactory;
@@ -18,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  * @date 2025-01-09
  */
 @Slf4j
-public abstract class AbstractRaffleStrategy implements IRaffleStrategy {
+public abstract class AbstractRaffleStrategy implements IRaffleStrategy, IRaffleStock {
 
 	/**
 	 * 策略仓储服务 -> 仓储层提供数据

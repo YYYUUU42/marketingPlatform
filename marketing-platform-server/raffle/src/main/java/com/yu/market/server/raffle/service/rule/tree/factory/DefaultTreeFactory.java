@@ -53,7 +53,7 @@ public class DefaultTreeFactory {
 	@NoArgsConstructor
 	public static class TreeActionBO {
 		private RuleLogicCheckType ruleLogicCheckType;
-		private StrategyAward strategyAwardData;
+		private StrategyAward strategyAward;
 	}
 
 	/**
