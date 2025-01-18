@@ -37,6 +37,10 @@ mybatis:
   mapper-locations: classpath:/mybatis/mapper/mysql/*.xml
   config-location:  classpath:/mybatis/config/mybatis-config.xml
 
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
 # Redis
 redis:
   sdk:
@@ -52,3 +56,10 @@ redis:
       ping-interval: 60000
       keep-alive: true
       serializer: fastjson
+
+app:
+  config:
+    # 版本，方便通过接口版本升级
+    api-version: v1
+    # 跨域，开发阶段可以设置为 * 不限制
+    cross-origin: '*'
