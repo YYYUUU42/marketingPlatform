@@ -84,7 +84,7 @@ public class StrategyRepository implements IStrategyRepository {
 	 */
 	@Override
 	public void storeStrategyAwardSearchRateTable(String cacheKey, Integer rateRange, Map<Integer, Integer> strategyAwardSearchRateTable) {
-		// 存储抽奖策略范围值，如10000，用于生成1000以内的随机数
+		// 存储抽奖策略范围值
 		redisService.setValue(RedisKey.STRATEGY_RATE_RANGE_KEY + cacheKey, rateRange);
 
 		// 存储概率查找表
@@ -169,7 +169,7 @@ public class StrategyRepository implements IStrategyRepository {
 	public String queryStrategyRuleValue(Long strategyId, Integer awardId, String ruleModel) {
 		StrategyRule strategyRule = strategyRuleMapper.selectOne(new LambdaQueryWrapper<StrategyRule>()
 				.eq(StrategyRule::getStrategyId, strategyId)
-				.eq(StrategyRule::getAwardId, awardId)
+				.eq(awardId != null, StrategyRule::getAwardId, awardId)
 				.eq(StrategyRule::getRuleModel, ruleModel));
 
 		return strategyRule != null ? strategyRule.getRuleValue() : null;

@@ -30,7 +30,8 @@ public class StrategyDispatchImpl implements IStrategyDispatch {
 	 */
 	@Override
 	public Integer getRandomAwardId(Long strategyId, String ruleWeightValue) {
-		String key = String.valueOf(strategyId).concat("_").concat(ruleWeightValue);
+		String[] split = ruleWeightValue.split(Constants.COLON);
+		String key = String.valueOf(strategyId).concat(Constants.UNDERLINE).concat(split[0]);
 		int rateRange = repository.getRateRange(key);
 
 		return repository.getStrategyAwardAssemble(key, new SecureRandom().nextInt(rateRange));
