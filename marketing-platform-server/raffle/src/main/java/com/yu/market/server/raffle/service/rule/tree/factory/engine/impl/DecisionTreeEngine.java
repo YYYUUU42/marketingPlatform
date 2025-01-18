@@ -104,7 +104,7 @@ public class DecisionTreeEngine implements IDecisionTreeEngine {
 			}
 		}
 
-		throw new ServiceException(String.format("决策树引擎错误：未找到匹配的下一个节点，决策值=%s", decisionValue));
+		return null;
 	}
 
 	public boolean isDecisionMatch(String matterValue, RuleTreeNodeLineBO nodeLine) {

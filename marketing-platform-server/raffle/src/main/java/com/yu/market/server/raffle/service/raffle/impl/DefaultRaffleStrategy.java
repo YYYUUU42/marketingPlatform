@@ -4,12 +4,16 @@ import com.yu.market.common.exception.ServiceException;
 import com.yu.market.server.raffle.model.bo.*;
 import com.yu.market.server.raffle.repository.IStrategyRepository;
 import com.yu.market.server.raffle.service.armory.IStrategyDispatch;
+import com.yu.market.server.raffle.service.raffle.IRaffleAward;
+import com.yu.market.server.raffle.service.raffle.IRaffleStock;
 import com.yu.market.server.raffle.service.rule.chain.ILogicChain;
 import com.yu.market.server.raffle.service.rule.chain.factory.DefaultChainFactory;
 import com.yu.market.server.raffle.service.rule.tree.factory.DefaultTreeFactory;
 import com.yu.market.server.raffle.service.rule.tree.factory.engine.IDecisionTreeEngine;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 /**
@@ -19,7 +23,7 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
-public class DefaultRaffleStrategy extends AbstractRaffleStrategy {
+public class DefaultRaffleStrategy extends AbstractRaffleStrategy implements IRaffleStock, IRaffleAward {
 
 	public DefaultRaffleStrategy(IStrategyRepository repository, IStrategyDispatch strategyDispatch, DefaultChainFactory defaultChainFactory, DefaultTreeFactory defaultTreeFactory) {
 		super(repository, strategyDispatch, defaultChainFactory, defaultTreeFactory);
@@ -66,5 +70,16 @@ public class DefaultRaffleStrategy extends AbstractRaffleStrategy {
 	@Override
 	public void updateStrategyAwardStock(Long strategyId, Integer awardId) {
 		repository.updateStrategyAwardStock(strategyId, awardId);
+	}
+
+	/**
+	 * 根据策略ID查询抽奖奖品列表配置
+	 *
+	 * @param strategyId 策略ID
+	 * @return 奖品列表
+	 */
+	@Override
+	public List<StrategyAwardBO> queryRaffleStrategyAwardList(Long strategyId) {
+		return repository.queryStrategyAwardList(strategyId);
 	}
 }

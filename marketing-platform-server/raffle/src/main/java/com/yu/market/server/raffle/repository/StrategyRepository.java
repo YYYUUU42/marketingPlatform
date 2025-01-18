@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.yu.market.common.exception.errorCode.BaseErrorCode.UN_ASSEMBLED_STRATEGY_ARMORY;
+
 /**
  * @author yu
  * @description 策略服务仓储实现类
@@ -103,7 +105,11 @@ public class StrategyRepository implements IStrategyRepository {
 	 */
 	@Override
 	public int getRateRange(String cacheKey) {
-		return redisService.getValue(RedisKey.STRATEGY_RATE_RANGE_KEY + cacheKey);
+		cacheKey = RedisKey.STRATEGY_RATE_RANGE_KEY + cacheKey;
+		if (!redisService.isExists(cacheKey)) {
+			throw new ServiceException(UN_ASSEMBLED_STRATEGY_ARMORY);
+		}
+		return redisService.getValue(cacheKey);
 	}
 
 	/**
