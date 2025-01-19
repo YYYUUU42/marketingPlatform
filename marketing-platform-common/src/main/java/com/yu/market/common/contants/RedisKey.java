@@ -8,4 +8,7 @@ public class RedisKey {
 	public static String RULE_TREE_BO_KEY = "rule_tree_bo_key_";
 	public static String STRATEGY_AWARD_COUNT_KEY = "strategy_award_count_key_";
 	public static String STRATEGY_AWARD_COUNT_QUERY_KEY = "strategy_award_count_query_key";
+	public static String ACTIVITY_KEY = "marketing_platform_activity_key_";
+	public static String ACTIVITY_SKU_KEY = "marketing_platform_activity_sku_key_";
+	public static String ACTIVITY_COUNT_KEY = "marketing_platform_activity_count_key_";
 }
