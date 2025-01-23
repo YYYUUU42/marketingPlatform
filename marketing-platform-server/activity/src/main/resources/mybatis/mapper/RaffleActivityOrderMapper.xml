@@ -17,15 +17,19 @@
             <result property="dayCount" column="day_count" jdbcType="INTEGER"/>
             <result property="monthCount" column="month_count" jdbcType="INTEGER"/>
             <result property="state" column="state" jdbcType="VARCHAR"/>
+            <result property="outBusinessNo" column="out_business_no" jdbcType="VARCHAR"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,user_id,sku,
+        id
+        ,user_id,sku,
         activity_id,activity_name,strategy_id,
         order_id,order_time,total_count,
-        day_count,month_count,state,
+        day_count,month_count,`state`,outBusinessNo,
         create_time,update_time
     </sql>
+
+
 </mapper>

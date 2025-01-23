@@ -1,6 +1,7 @@
 package com.yu.market.server.activity.respository;
 
 
+import com.yu.market.server.activity.model.aggregate.CreateOrderAggregate;
 import com.yu.market.server.activity.model.bo.ActivityBO;
 import com.yu.market.server.activity.model.bo.ActivityCountBO;
 import com.yu.market.server.activity.model.bo.ActivitySkuBO;
@@ -23,8 +24,13 @@ public interface IActivityRepository {
     ActivityBO queryRaffleActivityByActivityId(Long activityId);
 
     /**
-     * 查询次数信息（用户在活动上可参与的次数
+     * 查询次数信息（用户在活动上可参与的次数）
      */
     ActivityCountBO queryRaffleActivityCountByActivityCountId(Long activityCountId);
+
+    /**
+     * 保存订单
+     */
+    void doSaveOrder(CreateOrderAggregate createOrderAggregate);
 
 }

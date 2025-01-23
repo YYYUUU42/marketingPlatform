@@ -79,6 +79,11 @@ public class RaffleActivityOrder implements Serializable {
     private String state;
 
     /**
+     * 业务仿重ID - 外部透传的，确保幂等
+     */
+    private String outBusinessNo;
+
+    /**
      * 创建时间
      */
     private Date createTime;

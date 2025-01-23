@@ -37,7 +37,10 @@ public enum BaseErrorCode implements IErrorCode {
     // ========== 调用第三方服务错误 ==========
     REMOTE_ERROR("C000001", "调用第三方服务发生错误"),
 
-    // ========== 抽奖相关错误 ==========
+    // ========== 调用第三方服务错误 ==========
+    INDEX_DUP("D00003", "唯一索引冲突"),
+
+    // ========== 业务相关错误 ==========
     STRATEGY_RULE_WEIGHT_IS_NULL("ERR_BIZ_001", "业务异常，策略规则中 rule_weight 权重规则已适用但未配置"),
     UN_ASSEMBLED_STRATEGY_ARMORY("ERR_BIZ_002", "抽奖策略配置未装配，请通过IStrategyArmory完成装配"),
     STATE_MACHINE_TRANSITION_FAILED("ERR_BIZ_003", "状态机转换失败"),

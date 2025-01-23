@@ -1,5 +1,6 @@
 package com.yu.market.server.activity.mapper;
 
+import com.yu.market.server.activity.model.pojo.RaffleActivityAccount;
 import com.yu.market.server.activity.model.pojo.RaffleActivityCount;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -8,6 +9,11 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * @Entity com.yu.market.server.activity.model.pojo.RaffleActivityCount
 */
 public interface RaffleActivityCountMapper extends BaseMapper<RaffleActivityCount> {
+
+	/**
+	 * 修改账户配额
+	 */
+	int updateAccountQuota(RaffleActivityAccount raffleActivityAccount);
 
 }
 

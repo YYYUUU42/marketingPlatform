@@ -25,6 +25,12 @@ public class ActivityOrderBO {
     private String userId;
 
     /**
+     * sku
+     */
+    private Long sku;
+
+
+    /**
      * 活动ID
      */
     private Long activityId;
@@ -68,5 +74,10 @@ public class ActivityOrderBO {
      * 订单状态
      */
     private OrderStateEnum state;
+
+    /**
+     * 业务仿重ID - 外部透传的，确保幂等
+     */
+    private String outBusinessNo;
 
 }
