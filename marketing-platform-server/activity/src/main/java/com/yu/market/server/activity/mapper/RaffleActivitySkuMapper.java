@@ -9,6 +9,15 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface RaffleActivitySkuMapper extends BaseMapper<RaffleActivitySku> {
 
+	/**
+	 * 修改 sku 库存
+	 */
+	void updateActivitySkuStock(Long sku);
+
+	/**
+	 * 将 sku 库存清零
+	 */
+	void clearActivitySkuStock(Long sku);
 }
 
 

@@ -63,3 +63,7 @@ app:
     api-version: v1
     # 跨域，开发阶段可以设置为 * 不限制
     cross-origin: '*'
+
+mq:
+  topic:
+    activity_sku_stock_zero: activity_sku_stock_zero

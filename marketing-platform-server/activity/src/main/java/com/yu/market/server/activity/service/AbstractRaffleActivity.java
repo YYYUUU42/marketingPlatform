@@ -31,7 +31,7 @@ public abstract class AbstractRaffleActivity extends RaffleActivitySupport imple
         String userId = skuRechargeBO.getUserId();
         Long sku = skuRechargeBO.getSku();
         String outBusinessNo = skuRechargeBO.getOutBusinessNo();
-        if (null == sku || StrUtil.isBlank(userId) || StrUtil.isBlank(outBusinessNo)) {
+        if (sku == null || StrUtil.isBlank(userId) || StrUtil.isBlank(outBusinessNo)) {
             throw new ServiceException(BaseErrorCode.ILLEGAL_PARAMETER);
         }
 

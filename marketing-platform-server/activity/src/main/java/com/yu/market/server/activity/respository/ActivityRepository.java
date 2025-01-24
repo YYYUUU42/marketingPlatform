@@ -1,28 +1,32 @@
 package com.yu.market.server.activity.respository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.yu.market.common.contants.Constants;
 import com.yu.market.common.contants.RedisKey;
+import com.yu.market.common.event.EventPublisher;
 import com.yu.market.common.exception.ServiceException;
 import com.yu.market.common.exception.errorCode.BaseErrorCode;
 import com.yu.market.common.redis.IRedisService;
 import com.yu.market.common.utils.BeanCopyUtil;
+import com.yu.market.server.activity.envent.ActivitySkuStockZeroMessageEvent;
 import com.yu.market.server.activity.mapper.RaffleActivityCountMapper;
 import com.yu.market.server.activity.mapper.RaffleActivityMapper;
 import com.yu.market.server.activity.mapper.RaffleActivityOrderMapper;
 import com.yu.market.server.activity.mapper.RaffleActivitySkuMapper;
 import com.yu.market.server.activity.model.aggregate.CreateOrderAggregate;
-import com.yu.market.server.activity.model.bo.ActivityBO;
-import com.yu.market.server.activity.model.bo.ActivityCountBO;
-import com.yu.market.server.activity.model.bo.ActivityOrderBO;
-import com.yu.market.server.activity.model.bo.ActivitySkuBO;
+import com.yu.market.server.activity.model.bo.*;
 import com.yu.market.server.activity.model.pojo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RBlockingQueue;
+import org.redisson.api.RDelayedQueue;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Collection;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author yu
@@ -40,6 +44,8 @@ public class ActivityRepository implements IActivityRepository {
 	private final RaffleActivityCountMapper activityCountMapper;
 	private final RaffleActivityOrderMapper activityOrderMapper;
 	private final TransactionTemplate transactionTemplate;
+	private final EventPublisher eventPublisher;
+	private final ActivitySkuStockZeroMessageEvent activitySkuStockZeroMessageEvent;
 
 
 	/**
@@ -91,6 +97,16 @@ public class ActivityRepository implements IActivityRepository {
 
 		redisService.setValue(cacheKey, activityCountBO);
 		return activityCountBO;
+	}
+
+	/**
+	 * 缓存活动 sku 数量
+	 */
+	@Override
+	public void cacheActivitySkuStockCount(String cacheKey, Integer stockCount) {
+		if (!redisService.isExists(cacheKey)) {
+			redisService.setAtomicLong(cacheKey, stockCount);
+		}
 	}
 
 	/**
@@ -149,5 +165,91 @@ public class ActivityRepository implements IActivityRepository {
 				throw new ServiceException(BaseErrorCode.INDEX_DUP.code());
 			}
 		});
+	}
+
+	/**
+	 * 扣减活动sku数量
+	 */
+	@Override
+	public boolean subtractionActivitySkuStock(Long sku, String cacheKey, Date endDateTime) {
+		// 减少库存并获取剩余库存数量
+		long surplus = redisService.decr(cacheKey);
+
+		if (surplus == 0) {
+			// 库存消耗完毕，发送消息更新数据库库存
+			eventPublisher.publish(
+					activitySkuStockZeroMessageEvent.topic(),
+					activitySkuStockZeroMessageEvent.buildEventMessage(sku)
+			);
+			return false;
+		}
+
+		if (surplus < 0) {
+			// 如果库存小于0，恢复库存为0，并返回
+			redisService.setAtomicLong(cacheKey, 0);
+			log.warn("库存不足警告：sku={}，cacheKey={}，surplus={}", sku, cacheKey, surplus);
+			return false;
+		}
+
+		// 计算锁的过期时间：活动结束时间 + 延迟1天
+		long expireMillis = endDateTime.getTime() - System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1);
+
+		// 拼接锁的唯一标识
+		String lockKey = cacheKey + Constants.UNDERLINE + surplus;
+
+		// 尝试加锁
+		boolean lockAcquired = redisService.setNx(lockKey, expireMillis, TimeUnit.MILLISECONDS);
+		if (!lockAcquired) {
+			log.info("活动SKU库存加锁失败：sku={}，cacheKey={}，lockKey={}", sku, cacheKey, lockKey);
+		}
+
+		return lockAcquired;
+	}
+
+	/**
+	 * 将消耗的发送到消息队列
+	 */
+	@Override
+	public void activitySkuStockConsumeSendQueue(ActivitySkuStockKeyBO activitySkuStockKeyVO) {
+		String cacheKey = RedisKey.ACTIVITY_SKU_COUNT_QUERY_KEY;
+		RBlockingQueue<ActivitySkuStockKeyBO> blockingQueue = redisService.getBlockingQueue(cacheKey);
+		RDelayedQueue<ActivitySkuStockKeyBO> delayedQueue = redisService.getDelayedQueue(blockingQueue);
+		delayedQueue.offer(activitySkuStockKeyVO, 3, TimeUnit.SECONDS);
+	}
+
+	/**
+	 * 获取活动 sku 库存消耗队列
+	 */
+	@Override
+	public ActivitySkuStockKeyBO takeQueueValue() {
+		String cacheKey = RedisKey.ACTIVITY_SKU_COUNT_QUERY_KEY;
+		RBlockingQueue<ActivitySkuStockKeyBO> destinationQueue = redisService.getBlockingQueue(cacheKey);
+		return destinationQueue.poll();
+	}
+
+	/**
+	 * 清空队列
+	 */
+	@Override
+	public void clearQueueValue() {
+		String cacheKey = RedisKey.ACTIVITY_SKU_COUNT_QUERY_KEY;
+		RBlockingQueue<ActivitySkuStockKeyBO> destinationQueue = redisService.getBlockingQueue(cacheKey);
+		destinationQueue.clear();
+	}
+
+	/**
+	 * 延迟队列 + 任务趋势更新活动sku库存
+	 */
+	@Override
+	public void updateActivitySkuStock(Long sku) {
+		activitySkuMapper.updateActivitySkuStock(sku);
+	}
+
+	/**
+	 * 缓存库已消耗完毕，清空数据库库存
+	 */
+	@Override
+	public void clearActivitySkuStock(Long sku) {
+		activitySkuMapper.clearActivitySkuStock(sku);
 	}
 }
