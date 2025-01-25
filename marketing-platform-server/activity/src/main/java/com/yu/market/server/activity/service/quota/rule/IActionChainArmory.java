@@ -1,4 +1,4 @@
-package com.yu.market.server.activity.service.rule;
+package com.yu.market.server.activity.service.quota.rule;
 
 /**
  * @author yu

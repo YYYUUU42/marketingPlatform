@@ -3,7 +3,7 @@ package com.yu.market.server.activity.envent.listener;
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.json.JSONUtil;
 import com.yu.market.common.event.BaseEvent;
-import com.yu.market.server.activity.service.ISkuStock;
+import com.yu.market.server.activity.service.IRaffleActivitySkuStockService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ import java.util.concurrent.Executors;
 public class ActivitySkuStockZeroCustomer {
 
 	private final RedissonClient redissonClient;
-	private final ISkuStock skuStock;
+	private final IRaffleActivitySkuStockService skuStock;
 
 	@Value("${mq.topic.activity_sku_stock_zero}")
 	private String topic;

@@ -1,14 +1,13 @@
 package com.yu.market.server.activity.service;
 
-
 import com.yu.market.server.activity.model.bo.ActivitySkuStockKeyBO;
 
 /**
  * @author yu
- * @description 活动sku库存处理接口
- * @date 2025-01-24
+ * @description 抽奖活动SKU库存服务
+ * @date 2025-01-25
  */
-public interface ISkuStock {
+public interface IRaffleActivitySkuStockService {
 
     /**
      * 获取活动sku库存消耗队列

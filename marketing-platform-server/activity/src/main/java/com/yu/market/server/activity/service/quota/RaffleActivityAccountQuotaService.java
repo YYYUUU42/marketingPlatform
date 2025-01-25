@@ -1,11 +1,13 @@
-package com.yu.market.server.activity.service;
+package com.yu.market.server.activity.service.quota;
+
 
 import com.yu.market.common.utils.SnowFlakeUtil;
-import com.yu.market.server.activity.model.aggregate.CreateOrderAggregate;
+import com.yu.market.server.activity.model.aggregate.CreateQuotaOrderAggregate;
 import com.yu.market.server.activity.model.bo.*;
 import com.yu.market.server.activity.model.enums.OrderStateEnum;
 import com.yu.market.server.activity.respository.IActivityRepository;
-import com.yu.market.server.activity.service.rule.factory.DefaultActivityChainFactory;
+import com.yu.market.server.activity.service.IRaffleActivitySkuStockService;
+import com.yu.market.server.activity.service.quota.rule.factory.DefaultActivityChainFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -13,17 +15,17 @@ import java.util.Date;
 /**
  * @author yu
  * @description 抽奖活动服务
- * @date 2025-01-23
+ * @date 2025-01-26
  */
 @Service
-public class RaffleActivityServiceImpl extends AbstractRaffleActivity implements ISkuStock{
+public class RaffleActivityAccountQuotaService extends AbstractRaffleActivityAccountQuota implements IRaffleActivitySkuStockService {
 
-	public RaffleActivityServiceImpl(IActivityRepository activityRepository, DefaultActivityChainFactory defaultActivityChainFactory) {
+	public RaffleActivityAccountQuotaService(IActivityRepository activityRepository, DefaultActivityChainFactory defaultActivityChainFactory) {
 		super(activityRepository, defaultActivityChainFactory);
 	}
 
 	@Override
-	protected CreateOrderAggregate buildOrderAggregate(SkuRechargeBO skuRechargeBO, ActivitySkuBO activitySkuBO, ActivityBO activityBO, ActivityCountBO activityCountBO) {
+	protected CreateQuotaOrderAggregate buildOrderAggregate(SkuRechargeBO skuRechargeBO, ActivitySkuBO activitySkuBO, ActivityBO activityBO, ActivityCountBO activityCountBO) {
 		// 订单实体对象
 		ActivityOrderBO activityOrderBO = ActivityOrderBO.builder()
 				.userId(skuRechargeBO.getUserId())
@@ -41,7 +43,7 @@ public class RaffleActivityServiceImpl extends AbstractRaffleActivity implements
 				.build();
 
 		// 构建聚合对象
-		return CreateOrderAggregate.builder()
+		return CreateQuotaOrderAggregate.builder()
 				.userId(skuRechargeBO.getUserId())
 				.activityId(activitySkuBO.getActivityId())
 				.totalCount(activityCountBO.getTotalCount())
@@ -52,9 +54,10 @@ public class RaffleActivityServiceImpl extends AbstractRaffleActivity implements
 	}
 
 	@Override
-	protected void doSaveOrder(CreateOrderAggregate createOrderAggregate) {
+	protected void doSaveOrder(CreateQuotaOrderAggregate createOrderAggregate) {
 		activityRepository.doSaveOrder(createOrderAggregate);
 	}
+
 
 	/**
 	 * 获取活动sku库存消耗队列
@@ -64,7 +67,7 @@ public class RaffleActivityServiceImpl extends AbstractRaffleActivity implements
 	 */
 	@Override
 	public ActivitySkuStockKeyBO takeQueueValue() throws InterruptedException {
-		return null;
+		return activityRepository.takeQueueValue();
 	}
 
 	/**
@@ -72,7 +75,7 @@ public class RaffleActivityServiceImpl extends AbstractRaffleActivity implements
 	 */
 	@Override
 	public void clearQueueValue() {
-
+		activityRepository.clearQueueValue();
 	}
 
 	/**
@@ -82,7 +85,7 @@ public class RaffleActivityServiceImpl extends AbstractRaffleActivity implements
 	 */
 	@Override
 	public void updateActivitySkuStock(Long sku) {
-
+		activityRepository.updateActivitySkuStock(sku);
 	}
 
 	/**
@@ -92,6 +95,6 @@ public class RaffleActivityServiceImpl extends AbstractRaffleActivity implements
 	 */
 	@Override
 	public void clearActivitySkuStock(Long sku) {
-
+		activityRepository.clearActivitySkuStock(sku);
 	}
 }

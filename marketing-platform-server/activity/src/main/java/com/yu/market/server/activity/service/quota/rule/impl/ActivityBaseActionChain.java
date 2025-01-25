@@ -1,4 +1,4 @@
-package com.yu.market.server.activity.service.rule.impl;
+package com.yu.market.server.activity.service.quota.rule.impl;
 
 import com.yu.market.common.exception.ServiceException;
 import com.yu.market.common.exception.errorCode.BaseErrorCode;
@@ -6,7 +6,7 @@ import com.yu.market.server.activity.model.bo.ActivityBO;
 import com.yu.market.server.activity.model.bo.ActivityCountBO;
 import com.yu.market.server.activity.model.bo.ActivitySkuBO;
 import com.yu.market.server.activity.model.enums.ActivityStateEnum;
-import com.yu.market.server.activity.service.rule.AbstractActionChain;
+import com.yu.market.server.activity.service.quota.rule.AbstractActionChain;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

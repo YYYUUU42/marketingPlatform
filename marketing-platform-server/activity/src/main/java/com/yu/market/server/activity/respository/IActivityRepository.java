@@ -1,11 +1,9 @@
 package com.yu.market.server.activity.respository;
 
 
-import com.yu.market.server.activity.model.aggregate.CreateOrderAggregate;
-import com.yu.market.server.activity.model.bo.ActivityBO;
-import com.yu.market.server.activity.model.bo.ActivityCountBO;
-import com.yu.market.server.activity.model.bo.ActivitySkuBO;
-import com.yu.market.server.activity.model.bo.ActivitySkuStockKeyBO;
+import com.yu.market.server.activity.model.aggregate.CreatePartakeOrderAggregate;
+import com.yu.market.server.activity.model.aggregate.CreateQuotaOrderAggregate;
+import com.yu.market.server.activity.model.bo.*;
 
 import java.util.Date;
 
@@ -34,7 +32,7 @@ public interface IActivityRepository {
     /**
      * 保存订单
      */
-    void doSaveOrder(CreateOrderAggregate createOrderAggregate);
+    void doSaveOrder(CreateQuotaOrderAggregate createOrderAggregate);
 
     /**
      * 缓存活动 sku 数量
@@ -70,4 +68,26 @@ public interface IActivityRepository {
      * 缓存库存已消耗完毕，清空数据库库存
      */
     void clearActivitySkuStock(Long sku);
+
+    /**
+     * 查询未被使用的活动参与订单记录
+     */
+    UserRaffleOrderBO queryNoUsedRaffleOrder(PartakeRaffleActivityBO partakeRaffleActivityBO);
+
+    /**
+     * 查询总账户额度
+     */
+    ActivityAccountBO queryActivityAccountByUserId(String userId, Long activityId);
+
+    /**
+     * 查询月账户额度
+     */
+    ActivityAccountMonthBO queryActivityAccountMonthByUserId(String userId, Long activityId, String month);
+
+    /**
+     * 查询日账户额度
+     */
+    ActivityAccountDayBO queryActivityAccountDayByUserId(String userId, Long activityId, String day);
+
+    void saveCreatePartakeOrderAggregate(CreatePartakeOrderAggregate createPartakeOrderAggregate);
 }

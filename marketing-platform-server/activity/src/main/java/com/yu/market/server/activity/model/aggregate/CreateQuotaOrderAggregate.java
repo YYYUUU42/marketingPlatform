@@ -1,6 +1,5 @@
 package com.yu.market.server.activity.model.aggregate;
 
-import com.yu.market.server.activity.model.bo.ActivityAccountBO;
 import com.yu.market.server.activity.model.bo.ActivityOrderBO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateOrderAggregate {
+public class CreateQuotaOrderAggregate {
 
     /**
      * 用户ID

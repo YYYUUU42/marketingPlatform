@@ -9,12 +9,11 @@ import com.yu.market.common.exception.errorCode.BaseErrorCode;
 import com.yu.market.common.redis.IRedisService;
 import com.yu.market.common.utils.BeanCopyUtil;
 import com.yu.market.server.activity.envent.ActivitySkuStockZeroMessageEvent;
-import com.yu.market.server.activity.mapper.RaffleActivityCountMapper;
-import com.yu.market.server.activity.mapper.RaffleActivityMapper;
-import com.yu.market.server.activity.mapper.RaffleActivityOrderMapper;
-import com.yu.market.server.activity.mapper.RaffleActivitySkuMapper;
-import com.yu.market.server.activity.model.aggregate.CreateOrderAggregate;
+import com.yu.market.server.activity.mapper.*;
+import com.yu.market.server.activity.model.aggregate.CreateQuotaOrderAggregate;
 import com.yu.market.server.activity.model.bo.*;
+import com.yu.market.server.activity.model.enums.OrderStateEnum;
+import com.yu.market.server.activity.model.enums.UserRaffleOrderStateEnum;
 import com.yu.market.server.activity.model.pojo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +42,10 @@ public class ActivityRepository implements IActivityRepository {
 	private final RaffleActivitySkuMapper activitySkuMapper;
 	private final RaffleActivityCountMapper activityCountMapper;
 	private final RaffleActivityOrderMapper activityOrderMapper;
+	private final RaffleActivityAccountMapper activityAccountMapper;
+	private final UserRaffleOrderMapper userRaffleOrderMapper;
+	private final RaffleActivityAccountMonthMapper activityAccountMonthMapper;
+	private final RaffleActivityAccountDayMapper activityAccountDayMapper;
 	private final TransactionTemplate transactionTemplate;
 	private final EventPublisher eventPublisher;
 	private final ActivitySkuStockZeroMessageEvent activitySkuStockZeroMessageEvent;
@@ -113,7 +116,7 @@ public class ActivityRepository implements IActivityRepository {
 	 * 保存订单
 	 */
 	@Override
-	public void doSaveOrder(CreateOrderAggregate createOrderAggregate) {
+	public void doSaveOrder(CreateQuotaOrderAggregate createOrderAggregate) {
 		// 订单对象
 		ActivityOrderBO activityOrderBO = createOrderAggregate.getActivityOrderBO();
 		RaffleActivityOrder raffleActivityOrder = new RaffleActivityOrder();
@@ -252,4 +255,92 @@ public class ActivityRepository implements IActivityRepository {
 	public void clearActivitySkuStock(Long sku) {
 		activitySkuMapper.clearActivitySkuStock(sku);
 	}
+
+	/**
+	 * 查询未被使用的活动参与订单记录
+	 */
+	@Override
+	public UserRaffleOrderBO queryNoUsedRaffleOrder(PartakeRaffleActivityBO partakeRaffleActivityBO) {
+		UserRaffleOrder userRaffleOrder = userRaffleOrderMapper.selectOne(new LambdaQueryWrapper<UserRaffleOrder>()
+				.eq(UserRaffleOrder::getUserId, partakeRaffleActivityBO.getUserId())
+				.eq(UserRaffleOrder::getActivityId, partakeRaffleActivityBO.getUserId())
+				.eq(UserRaffleOrder::getOrderState, OrderStateEnum.create.getCode()));
+		if (userRaffleOrder == null) {
+			return null;
+		}
+
+		UserRaffleOrderBO userRaffleOrderBO = BeanCopyUtil.copyProperties(userRaffleOrder, UserRaffleOrderBO.class);
+		userRaffleOrderBO.setOrderState(UserRaffleOrderStateEnum.valueOf(userRaffleOrder.getOrderState()));
+
+		return userRaffleOrderBO;
+	}
+
+	/**
+	 * 查询总账户额度
+	 */
+	@Override
+	public ActivityAccountBO queryActivityAccountByUserId(String userId, Long activityId) {
+		RaffleActivityAccount raffleActivityAccount = activityAccountMapper.selectOne(new LambdaQueryWrapper<RaffleActivityAccount>()
+				.eq(RaffleActivityAccount::getUserId, userId)
+				.eq(RaffleActivityAccount::getActivityId, activityId));
+		if (raffleActivityAccount == null) {
+			return null;
+		}
+
+		return ActivityAccountBO.builder()
+				.userId(raffleActivityAccount.getUserId())
+				.activityId(raffleActivityAccount.getActivityId())
+				.totalCount(raffleActivityAccount.getTotalCount())
+				.totalCountSurplus(raffleActivityAccount.getTotalCountSurplus())
+				.dayCount(raffleActivityAccount.getDayCount())
+				.dayCountSurplus(raffleActivityAccount.getDayCountSurplus())
+				.monthCount(raffleActivityAccount.getMonthCount())
+				.monthCountSurplus(raffleActivityAccount.getMonthCountSurplus())
+				.build();
+	}
+
+	/**
+	 * 查询月账户额度
+	 */
+	@Override
+	public ActivityAccountMonthBO queryActivityAccountMonthByUserId(String userId, Long activityId, String month) {
+		RaffleActivityAccountMonth raffleActivityAccountMonth = activityAccountMonthMapper.selectOne(new LambdaQueryWrapper<RaffleActivityAccountMonth>()
+				.eq(RaffleActivityAccountMonth::getUserId, userId)
+				.eq(RaffleActivityAccountMonth::getActivityId, activityId)
+				.eq(RaffleActivityAccountMonth::getMonth, month));
+		if (raffleActivityAccountMonth == null){
+			return null;
+		}
+
+		return ActivityAccountMonthBO.builder()
+				.userId(raffleActivityAccountMonth.getUserId())
+				.activityId(raffleActivityAccountMonth.getActivityId())
+				.month(raffleActivityAccountMonth.getMonth())
+				.monthCount(raffleActivityAccountMonth.getMonthCount())
+				.monthCountSurplus(raffleActivityAccountMonth.getMonthCountSurplus())
+				.build();
+	}
+
+	/**
+	 * 查询日账户额度
+	 */
+	@Override
+	public ActivityAccountDayBO queryActivityAccountDayByUserId(String userId, Long activityId, String day) {
+		RaffleActivityAccountDay raffleActivityAccountDay = activityAccountDayMapper.selectOne(new LambdaQueryWrapper<RaffleActivityAccountDay>()
+				.eq(RaffleActivityAccountDay::getUserId, userId)
+				.eq(RaffleActivityAccountDay::getActivityId, activityId)
+				.eq(RaffleActivityAccountDay::getDay, day));
+		if (raffleActivityAccountDay == null){
+			return null;
+		}
+
+		return ActivityAccountDayBO.builder()
+				.userId(raffleActivityAccountDay.getUserId())
+				.activityId(raffleActivityAccountDay.getActivityId())
+				.day(raffleActivityAccountDay.getDay())
+				.dayCount(raffleActivityAccountDay.getDayCount())
+				.dayCountSurplus(raffleActivityAccountDay.getDayCountSurplus())
+				.build();
+	}
+
 }

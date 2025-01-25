@@ -1,6 +1,6 @@
-package com.yu.market.server.activity.service.rule.factory;
+package com.yu.market.server.activity.service.quota.rule.factory;
 
-import com.yu.market.server.activity.service.rule.IActionChain;
+import com.yu.market.server.activity.service.quota.rule.IActionChain;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
