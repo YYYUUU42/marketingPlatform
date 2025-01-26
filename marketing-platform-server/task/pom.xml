@@ -5,22 +5,29 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.yu</groupId>
-        <artifactId>marketing-platform-v1</artifactId>
+        <artifactId>marketing-platform-server</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>marketing-platform-server</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>raffle</module>
-        <module>activity</module>
-        <module>task</module>
-    </modules>
+    <artifactId>task</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yu</groupId>
+            <artifactId>marketing-platform-common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 
 </project>

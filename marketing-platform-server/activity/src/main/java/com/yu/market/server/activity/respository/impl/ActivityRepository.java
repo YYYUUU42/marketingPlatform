@@ -1,4 +1,4 @@
-package com.yu.market.server.activity.respository;
+package com.yu.market.server.activity.respository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yu.market.common.contants.Constants;
@@ -15,6 +15,7 @@ import com.yu.market.server.activity.model.bo.*;
 import com.yu.market.server.activity.model.enums.OrderStateEnum;
 import com.yu.market.server.activity.model.enums.UserRaffleOrderStateEnum;
 import com.yu.market.server.activity.model.pojo.*;
+import com.yu.market.server.activity.respository.IActivityRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBlockingQueue;
