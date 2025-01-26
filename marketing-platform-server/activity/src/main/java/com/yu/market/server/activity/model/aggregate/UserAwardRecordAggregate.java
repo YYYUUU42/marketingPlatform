@@ -1,8 +1,7 @@
 package com.yu.market.server.activity.model.aggregate;
 
-import com.yu.market.server.activity.model.bo.AwardTaskBO;
+import com.yu.market.server.activity.envent.task.AwardTaskBO;
 import com.yu.market.server.activity.model.bo.UserAwardRecordBO;
-import com.yu.market.server.task.model.bo.TaskBO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.yu.market.server.activity.model.bo;
+package com.yu.market.server.activity.envent.task;
 
 import com.yu.market.common.event.BaseEvent;
 import com.yu.market.server.activity.envent.SendAwardMessageEvent;

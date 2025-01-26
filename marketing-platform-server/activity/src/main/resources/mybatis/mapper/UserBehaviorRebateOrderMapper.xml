@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yu.market.server.activity.mapper.UserBehaviorRebateOrderMapper">
+
+    <resultMap id="BaseResultMap" type="com.yu.market.server.activity.model.pojo.UserBehaviorRebateOrder">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+            <result property="behaviorType" column="behavior_type" jdbcType="VARCHAR"/>
+            <result property="rebateDesc" column="rebate_desc" jdbcType="VARCHAR"/>
+            <result property="rebateType" column="rebate_type" jdbcType="VARCHAR"/>
+            <result property="rebateConfig" column="rebate_config" jdbcType="VARCHAR"/>
+            <result property="outBusinessNo" column="out_business_no" jdbcType="VARCHAR"/>
+            <result property="bizId" column="biz_id" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_id,order_id,
+        behavior_type,rebate_desc,rebate_type,
+        rebate_config,out_business_no,biz_id,
+        create_time,update_time
+    </sql>
+</mapper>

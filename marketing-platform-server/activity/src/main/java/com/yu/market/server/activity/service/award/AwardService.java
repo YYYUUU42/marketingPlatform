@@ -4,7 +4,7 @@ import com.yu.market.common.event.BaseEvent;
 import com.yu.market.common.utils.BeanCopyUtil;
 import com.yu.market.server.activity.envent.SendAwardMessageEvent;
 import com.yu.market.server.activity.model.aggregate.UserAwardRecordAggregate;
-import com.yu.market.server.activity.model.bo.AwardTaskBO;
+import com.yu.market.server.activity.envent.task.AwardTaskBO;
 import com.yu.market.server.activity.model.bo.UserAwardRecordBO;
 import com.yu.market.server.activity.respository.IAwardRepository;
 import com.yu.market.server.task.model.enums.TaskStateEnum;

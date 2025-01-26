@@ -7,7 +7,7 @@ import com.yu.market.common.exception.errorCode.BaseErrorCode;
 import com.yu.market.common.utils.BeanCopyUtil;
 import com.yu.market.server.activity.mapper.UserAwardRecordMapper;
 import com.yu.market.server.activity.model.aggregate.UserAwardRecordAggregate;
-import com.yu.market.server.activity.model.bo.AwardTaskBO;
+import com.yu.market.server.activity.envent.task.AwardTaskBO;
 import com.yu.market.server.activity.model.bo.UserAwardRecordBO;
 import com.yu.market.server.activity.model.pojo.UserAwardRecord;
 import com.yu.market.server.activity.respository.IAwardRepository;
