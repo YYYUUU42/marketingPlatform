@@ -10,6 +10,7 @@ import com.yu.market.common.redis.IRedisService;
 import com.yu.market.common.utils.BeanCopyUtil;
 import com.yu.market.server.activity.envent.ActivitySkuStockZeroMessageEvent;
 import com.yu.market.server.activity.mapper.*;
+import com.yu.market.server.activity.model.aggregate.CreatePartakeOrderAggregate;
 import com.yu.market.server.activity.model.aggregate.CreateQuotaOrderAggregate;
 import com.yu.market.server.activity.model.bo.*;
 import com.yu.market.server.activity.model.enums.OrderStateEnum;
@@ -342,6 +343,79 @@ public class ActivityRepository implements IActivityRepository {
 				.dayCount(raffleActivityAccountDay.getDayCount())
 				.dayCountSurplus(raffleActivityAccountDay.getDayCountSurplus())
 				.build();
+	}
+
+	@Override
+	public void saveCreatePartakeOrderAggregate(CreatePartakeOrderAggregate createPartakeOrderAggregate) {
+		String userId = createPartakeOrderAggregate.getUserId();
+		Long activityId = createPartakeOrderAggregate.getActivityId();
+		ActivityAccountBO activityAccountBO = createPartakeOrderAggregate.getActivityAccountBO();
+		ActivityAccountMonthBO activityAccountMonthBO = createPartakeOrderAggregate.getActivityAccountMonthBO();
+		ActivityAccountDayBO activityAccountDayBO = createPartakeOrderAggregate.getActivityAccountDayBO();
+		UserRaffleOrderBO userRaffleOrderBO = createPartakeOrderAggregate.getUserRaffleOrderBO();
+
+		transactionTemplate.execute(status -> {
+			try {
+				// 更新总账户
+				int totalCount = activityAccountMapper.updateActivityAccountSubtractionQuota(userId, activityId);
+				if (totalCount != 1) {
+					status.setRollbackOnly();
+					log.warn("写入创建参与活动记录，更新总账户额度不足，异常 userId: {} activityId: {}", userId, activityId);
+					throw new ServiceException(BaseErrorCode.ACCOUNT_QUOTA_ERROR);
+				}
+
+				// 创建或更新月账户，true - 存在则更新，false - 不存在则插入
+				if (createPartakeOrderAggregate.isExistAccountMonth()) {
+					int updateMonthCount = activityAccountMonthMapper.updateActivityAccountMonthSubtractionQuota(userId, activityId, activityAccountMonthBO.getMonth());
+					if (updateMonthCount != 1) {
+						// 未更新成功则回滚
+						status.setRollbackOnly();
+						log.warn("写入创建参与活动记录，更新月账户额度不足，异常 userId: {} activityId: {} month: {}", userId, activityId, activityAccountMonthBO.getMonth());
+						throw new ServiceException(BaseErrorCode.ACCOUNT_MONTH_QUOTA_ERROR);
+					}
+
+					// 更新总账户中月账户库存
+					activityAccountMapper.updateActivityAccountSubtractionQuota(userId, activityId);
+				} else {
+					RaffleActivityAccountMonth raffleActivityAccountMonth = BeanCopyUtil.copyProperties(activityAccountMonthBO, RaffleActivityAccountMonth.class);
+					raffleActivityAccountMonth.setMonthCountSurplus(activityAccountMonthBO.getMonthCountSurplus() - 1);
+					activityAccountMonthMapper.insert(raffleActivityAccountMonth);
+
+					activityAccountMapper.updateActivityAccountDaySurplusImageQuota(userId, activityId, activityAccountMonthBO.getMonthCountSurplus());
+				}
+
+				// 创建或更新日账户，true - 存在则更新，false - 不存在则插入
+				if (createPartakeOrderAggregate.isExistAccountDay()) {
+					int updateDayCount = activityAccountDayMapper.updateActivityAccountDaySubtractionQuota(userId, activityId, activityAccountDayBO.getDay());
+					if (updateDayCount != 1) {
+						// 未更新成功则回滚
+						status.setRollbackOnly();
+						log.warn("写入创建参与活动记录，更新日账户额度不足，异常 userId: {} activityId: {} month: {}", userId, activityId, activityAccountDayBO.getDay());
+						throw new ServiceException(BaseErrorCode.ACCOUNT_MONTH_QUOTA_ERROR);
+					}
+
+					// 更新总账户中月账户库存
+					activityAccountMapper.updateActivityAccountSubtractionQuota(userId, activityId);
+				} else {
+					RaffleActivityAccountDay raffleActivityAccountDay = BeanCopyUtil.copyProperties(activityAccountDayBO, RaffleActivityAccountDay.class);
+					raffleActivityAccountDay.setDayCountSurplus(activityAccountDayBO.getDayCountSurplus() - 1);
+					activityAccountDayMapper.insert(raffleActivityAccountDay);
+
+					activityAccountMapper.updateActivityAccountDaySurplusImageQuota(userId, activityId, activityAccountDayBO.getDayCountSurplus());
+				}
+
+				// 写入参与活动订单
+				UserRaffleOrder userRaffleOrder = BeanCopyUtil.copyProperties(userRaffleOrderBO, UserRaffleOrder.class);
+				userRaffleOrder.setOrderState(userRaffleOrderBO.getOrderState().getCode());
+				userRaffleOrderMapper.insert(userRaffleOrder);
+
+				return 1;
+			} catch (DuplicateKeyException e) {
+				status.setRollbackOnly();
+				log.error("写入创建参与活动记录，唯一索引冲突 userId: {} activityId: {}", userId, activityId, e);
+				throw new ServiceException(BaseErrorCode.INDEX_DUP);
+			}
+		});
 	}
 
 }

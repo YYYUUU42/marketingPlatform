@@ -20,4 +20,14 @@
         month,month_count,month_count_surplus,
         create_time,update_time
     </sql>
+
+    <update id="updateActivityAccountMonthSubtractionQuota">
+        update raffle_activity_account_month
+        set month_count_surplus = month_count_surplus - 1,
+            update_time         = now()
+        where user_id = #{userId}
+          and activity_id = #{activityId}
+          and `month` = #{month}
+          and month_count_surplus > 0
+    </update>
 </mapper>

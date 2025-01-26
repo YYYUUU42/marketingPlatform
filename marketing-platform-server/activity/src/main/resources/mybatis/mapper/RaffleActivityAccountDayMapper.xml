@@ -20,4 +20,12 @@
         day,day_count,day_count_surplus,
         create_time,update_time
     </sql>
+
+    <update id="updateActivityAccountDaySubtractionQuota">
+        update raffle_activity_account_day
+        set day_count_surplus = day_count_surplus - 1,
+            update_time         = now()
+        where user_id = #{userId} and activity_id = #{activityId} and `day` = #{day}
+          and day_count_surplus > 0
+    </update>
 </mapper>

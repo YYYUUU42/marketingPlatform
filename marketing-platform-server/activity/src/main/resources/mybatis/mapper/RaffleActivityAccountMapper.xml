@@ -24,4 +24,39 @@
         day_count_surplus,month_count,month_count_surplus,
         create_time,update_time
     </sql>
+
+    <update id="updateActivityAccountSubtractionQuota">
+        update raffle_activity_account
+        set total_count_surplus = total_count_surplus - 1,
+            update_time         = now()
+        where user_id = #{userId}
+          and activity_id = #{activityId}
+          and total_count_surplus > 0
+    </update>
+
+    <update id="updateActivityAccountMonthSubtractionQuota">
+        update raffle_activity_account
+        set month_count_surplus = month_count_surplus - 1,
+            update_time         = now()
+        where user_id = #{userId}
+          and activity_id = #{activityId}
+          and month_count_surplus > 0
+    </update>
+
+    <update id="updateActivityAccountDaySubtractionQuota">
+        update raffle_activity_account
+        set day_count_surplus = day_count_surplus - 1,
+            update_time       = now()
+        where user_id = #{userId}
+          and activity_id = #{activityId}
+          and day_count_surplus > 0
+    </update>
+
+    <update id="updateActivityAccountMonthSurplusImageQuota">
+
+    </update>
+
+    <update id="updateActivityAccountDaySurplusImageQuota">
+
+    </update>
 </mapper>
