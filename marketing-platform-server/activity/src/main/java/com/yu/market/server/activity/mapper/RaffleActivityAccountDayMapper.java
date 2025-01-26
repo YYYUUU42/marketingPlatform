@@ -12,6 +12,7 @@ public interface RaffleActivityAccountDayMapper extends BaseMapper<RaffleActivit
 
 	int updateActivityAccountDaySubtractionQuota(@Param("userId") String userId, @Param("activityId") Long activityId, @Param("day") String day);
 
+	void addAccountQuota(RaffleActivityAccountDay raffleActivityAccountDay);
 }
 
 

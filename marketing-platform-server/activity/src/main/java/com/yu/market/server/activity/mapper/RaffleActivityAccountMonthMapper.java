@@ -11,6 +11,8 @@ import org.apache.ibatis.annotations.Param;
 public interface RaffleActivityAccountMonthMapper extends BaseMapper<RaffleActivityAccountMonth> {
 
 	int updateActivityAccountMonthSubtractionQuota(@Param("userId") String userId, @Param("activityId") Long activityId, @Param("month") String month);
+
+	void addAccountQuota(RaffleActivityAccountMonth raffleActivityAccountMonth);
 }
 
 

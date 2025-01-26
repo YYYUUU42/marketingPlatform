@@ -18,8 +18,8 @@ import java.util.concurrent.Executors;
  * @date 2025-01-26
  */
 @Slf4j
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor
 public abstract class AbstractCustomer {
 
 	private final RedissonClient redissonClient;
