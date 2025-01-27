@@ -18,4 +18,6 @@ public enum RebateTypeEnum {
 
 	private final String code;
 	private final String info;
+
+	public
 }
