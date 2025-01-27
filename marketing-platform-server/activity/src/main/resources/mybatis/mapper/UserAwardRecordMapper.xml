@@ -24,4 +24,12 @@
         award_title,award_time,award_state,
         create_time,update_time
     </sql>
+
+    <update id="updateAwardRecordCompletedState">
+        update user_award_record
+        set award_state = 'completed'
+        where user_id = #{userId}
+          and order_id = #{orderId}
+          and award_state = 'create'
+    </update>
 </mapper>

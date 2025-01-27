@@ -1,6 +1,7 @@
 package com.yu.market.server.activity.service.award;
 
 
+import com.yu.market.server.activity.model.bo.DistributeAwardBO;
 import com.yu.market.server.activity.model.bo.UserAwardRecordBO;
 
 /**
@@ -12,4 +13,8 @@ public interface IAwardService {
 
     void saveUserAwardRecord(UserAwardRecordBO userAwardRecordBO);
 
+    /**
+     * 配送发货奖品
+     */
+    void distributeAward(DistributeAwardBO distributeAwardBO);
 }

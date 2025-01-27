@@ -1,6 +1,7 @@
 package com.yu.market.server.activity.respository;
 
 
+import com.yu.market.server.activity.model.aggregate.GiveOutPrizesAggregate;
 import com.yu.market.server.activity.model.aggregate.UserAwardRecordAggregate;
 
 /**
@@ -12,4 +13,9 @@ public interface IAwardRepository {
 
     void saveUserAwardRecord(UserAwardRecordAggregate userAwardRecordAggregate);
 
+    String queryAwardConfig(Integer awardId);
+
+    void saveGiveOutPrizesAggregate(GiveOutPrizesAggregate giveOutPrizesAggregate);
+
+    String queryAwardKey(Integer awardId);
 }

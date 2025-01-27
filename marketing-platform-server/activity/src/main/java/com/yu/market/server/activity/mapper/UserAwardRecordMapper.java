@@ -9,6 +9,9 @@ import com.yu.market.server.activity.model.pojo.UserAwardRecord;
 */
 public interface UserAwardRecordMapper extends BaseMapper<UserAwardRecord> {
 
+	int updateAwardRecordCompletedState(UserAwardRecord userAwardRecordReq);
+
+
 }
 
 

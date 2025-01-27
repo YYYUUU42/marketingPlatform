@@ -1,15 +1,23 @@
 package com.yu.market.server.activity.respository.impl;
 
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yu.market.common.event.EventPublisher;
 import com.yu.market.common.exception.ServiceException;
 import com.yu.market.common.exception.errorCode.BaseErrorCode;
 import com.yu.market.common.utils.BeanCopyUtil;
+import com.yu.market.server.activity.mapper.AwardMapper;
 import com.yu.market.server.activity.mapper.UserAwardRecordMapper;
+import com.yu.market.server.activity.mapper.UserCreditAccountMapper;
+import com.yu.market.server.activity.model.aggregate.GiveOutPrizesAggregate;
 import com.yu.market.server.activity.model.aggregate.UserAwardRecordAggregate;
 import com.yu.market.server.activity.envent.task.AwardTaskBO;
 import com.yu.market.server.activity.model.bo.UserAwardRecordBO;
+import com.yu.market.server.activity.model.bo.UserCreditAwardBO;
+import com.yu.market.server.activity.model.enums.AccountStatusEnum;
+import com.yu.market.server.activity.model.pojo.Award;
 import com.yu.market.server.activity.model.pojo.UserAwardRecord;
+import com.yu.market.server.activity.model.pojo.UserCreditAccount;
 import com.yu.market.server.activity.respository.IAwardRepository;
 import com.yu.market.server.task.mapper.TaskMapper;
 import com.yu.market.server.task.model.pojo.Task;
@@ -24,8 +32,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 @RequiredArgsConstructor
 public class AwardRepository implements IAwardRepository {
 
+	private final AwardMapper awardMapper;
 	private final TaskMapper taskMapper;
 	private final UserAwardRecordMapper userAwardRecordMapper;
+	private final UserCreditAccountMapper userCreditAccountMapper;
 	private final TransactionTemplate transactionTemplate;
 	private final EventPublisher eventPublisher;
 
@@ -71,5 +81,69 @@ public class AwardRepository implements IAwardRepository {
 			taskMapper.updateTaskSendMessageFail(task.getUserId(), task.getMessageId());
 		}
 
+	}
+
+	@Override
+	public String queryAwardConfig(Integer awardId) {
+		Award award = awardMapper.selectOne(new LambdaQueryWrapper<Award>()
+				.eq(Award::getAwardId, awardId));
+		if (award != null) {
+			return award.getAwardConfig();
+		}
+
+		return null;
+	}
+
+	@Override
+	public void saveGiveOutPrizesAggregate(GiveOutPrizesAggregate giveOutPrizesAggregate) {
+		String userId = giveOutPrizesAggregate.getUserId();
+		UserCreditAwardBO userCreditAwardBO = giveOutPrizesAggregate.getUserCreditAwardBO();
+		UserAwardRecordBO userAwardRecordBO = giveOutPrizesAggregate.getUserAwardRecordBO();
+
+		// 更新发奖记录
+		UserAwardRecord userAwardRecord = new UserAwardRecord();
+		userAwardRecord.setUserId(userId);
+		userAwardRecord.setOrderId(userAwardRecordBO.getOrderId());
+		userAwardRecord.setAwardState(userAwardRecordBO.getAwardState().getCode());
+
+		// 更新用户积分 - 首次则插入数据
+		UserCreditAccount userCreditAccount = new UserCreditAccount();
+		userCreditAccount.setUserId(userCreditAwardBO.getUserId());
+		userCreditAccount.setTotalAmount(userCreditAwardBO.getCreditAmount());
+		userCreditAccount.setAvailableAmount(userCreditAwardBO.getCreditAmount());
+		userCreditAccount.setAccountStatus(AccountStatusEnum.open.getCode());
+
+		transactionTemplate.execute(status -> {
+			try {
+				// 更新积分 || 创建积分账户
+				int updateAccountCount = userCreditAccountMapper.updateAddAmount(userCreditAccount);
+				if (updateAccountCount == 0) {
+					userCreditAccountMapper.insert(userCreditAccount);
+				}
+
+				// 更新奖品记录
+				int updateAwardCount = userAwardRecordMapper.updateAwardRecordCompletedState(userAwardRecord);
+				if (updateAwardCount == 0) {
+					log.warn("更新中奖记录，重复更新拦截 userId:{} giveOutPrizesAggregate:{}", userId, JSONUtil.toJsonStr(giveOutPrizesAggregate));
+					status.setRollbackOnly();
+				}
+				return 1;
+			} catch (DuplicateKeyException e) {
+				status.setRollbackOnly();
+				log.error("更新中奖记录，唯一索引冲突 userId: {} ", userId, e);
+				throw new ServiceException(BaseErrorCode.INDEX_DUP);
+			}
+		});
+	}
+
+	@Override
+	public String queryAwardKey(Integer awardId) {
+		Award award = awardMapper.selectOne(new LambdaQueryWrapper<Award>()
+				.eq(Award::getAwardId, awardId));
+		if (award != null) {
+			return award.getAwardKey();
+		}
+
+		return null;
 	}
 }
