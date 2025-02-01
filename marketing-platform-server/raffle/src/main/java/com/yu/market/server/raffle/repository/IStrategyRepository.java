@@ -105,4 +105,12 @@ public interface IStrategyRepository {
      * 更新奖品库存消耗
      */
     void updateStrategyAwardStock(Long strategyId, Integer awardId);
+
+    /**
+     * 查询策略ID
+     *
+     * @param activityId 活动ID
+     * @return 策略ID
+     */
+    Long queryStrategyIdByActivityId(Long activityId);
 }

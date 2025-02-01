@@ -6,6 +6,7 @@ import com.yu.market.server.activity.model.aggregate.CreateQuotaOrderAggregate;
 import com.yu.market.server.activity.model.bo.*;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author yu
@@ -90,4 +91,9 @@ public interface IActivityRepository {
     ActivityAccountDayBO queryActivityAccountDayByUserId(String userId, Long activityId, String day);
 
     void saveCreatePartakeOrderAggregate(CreatePartakeOrderAggregate createPartakeOrderAggregate);
+
+    /**
+     * 根据活动ID获得活动sku列表
+     */
+    List<ActivitySkuBO> queryActivitySkuListByActivityId(Long activityId);
 }

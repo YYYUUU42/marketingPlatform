@@ -27,6 +27,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -439,6 +440,17 @@ public class ActivityRepository implements IActivityRepository {
 				throw new ServiceException(BaseErrorCode.INDEX_DUP);
 			}
 		});
+	}
+
+	/**
+	 * 根据活动ID获得活动sku列表
+	 */
+	@Override
+	public List<ActivitySkuBO> queryActivitySkuListByActivityId(Long activityId) {
+		List<RaffleActivitySku> raffleActivitySkuList = activitySkuMapper.selectList(new LambdaQueryWrapper<RaffleActivitySku>()
+				.eq(RaffleActivitySku::getActivityId, activityId));
+
+		return BeanCopyUtil.copyListProperties(raffleActivitySkuList, ActivitySkuBO.class);
 	}
 
 }

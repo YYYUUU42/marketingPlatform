@@ -24,7 +24,7 @@ import static com.yu.market.common.exception.errorCode.BaseErrorCode.STRATEGY_RU
 @RequiredArgsConstructor
 public class StrategyArmoryImpl implements IStrategyArmory {
 
-	private final StrategyRepository repository;
+	private final StrategyRepository strategyRepository;
 
 	/**
 	 * 装配抽奖策略配置，触发的时机为活动审核通过后进行调用
@@ -35,7 +35,7 @@ public class StrategyArmoryImpl implements IStrategyArmory {
 	@Override
 	public boolean assembleLotteryStrategy(Long strategyId) {
 		// 查询策略配置
-		List<StrategyAwardBO> strategyAwardBOList = repository.queryStrategyAwardList(strategyId);
+		List<StrategyAwardBO> strategyAwardBOList = strategyRepository.queryStrategyAwardList(strategyId);
 		if (CollectionUtil.isEmpty(strategyAwardBOList)) {
 			log.warn("策略配置为空，无法装配抽奖策略，策略ID: {}", strategyId);
 			return false;
@@ -52,7 +52,7 @@ public class StrategyArmoryImpl implements IStrategyArmory {
 		assembleLotteryStrategy(String.valueOf(strategyId), strategyAwardBOList);
 
 		// 查询权重策略配置
-		StrategyBO strategyBO = repository.queryStrategyBOByStrategyId(strategyId);
+		StrategyBO strategyBO = strategyRepository.queryStrategyBOByStrategyId(strategyId);
 		String ruleWeight = strategyBO.getRuleWeight();
 		if (StrUtil.isBlank(ruleWeight)) {
 			log.info("策略没有配置权重规则，直接跳过权重装配，策略ID: {}", strategyId);
@@ -60,7 +60,7 @@ public class StrategyArmoryImpl implements IStrategyArmory {
 		}
 
 		// 查询策略规则中 rule_weight 权重规则
-		StrategyRuleBO strategyRuleBO = repository.queryStrategyRule(strategyId, ruleWeight);
+		StrategyRuleBO strategyRuleBO = strategyRepository.queryStrategyRule(strategyId, ruleWeight);
 		if (strategyRuleBO == null) {
 			log.warn("策略规则中 rule_weight 权重规则已适用但未配置 - 策略ID: {}, 权重规则: {}", strategyId, ruleWeight);
 			throw new ServiceException(STRATEGY_RULE_WEIGHT_IS_NULL);
@@ -77,6 +77,18 @@ public class StrategyArmoryImpl implements IStrategyArmory {
 		});
 
 		return true;
+	}
+
+	/**
+	 * 装配抽奖策略配置「触发的时机可以为活动审核通过后进行调用」
+	 *
+	 * @param activityId 活动ID
+	 * @return 装配结果
+	 */
+	@Override
+	public boolean assembleLotteryStrategyByActivityId(Long activityId) {
+		Long strategyId = strategyRepository.queryStrategyIdByActivityId(activityId);
+		return assembleLotteryStrategy(strategyId);
 	}
 
 	/**
@@ -118,7 +130,7 @@ public class StrategyArmoryImpl implements IStrategyArmory {
 		}
 
 		// 存到 Redis 中
-		repository.storeStrategyAwardSearchRateTable(cacheKey, shuffleStrategyAwardSearchRateTable.size(), shuffleStrategyAwardSearchRateTable);
+		strategyRepository.storeStrategyAwardSearchRateTable(cacheKey, shuffleStrategyAwardSearchRateTable.size(), shuffleStrategyAwardSearchRateTable);
 	}
 
 	/**
@@ -130,6 +142,6 @@ public class StrategyArmoryImpl implements IStrategyArmory {
 	 */
 	private void cacheStrategyAwardCount(Long strategyId, Integer awardId, Integer awardCount) {
 		String cacheKey = RedisKey.STRATEGY_AWARD_COUNT_KEY + strategyId + Constants.UNDERLINE + awardId;
-		repository.cacheStrategyAwardCount(cacheKey, awardCount);
+		strategyRepository.cacheStrategyAwardCount(cacheKey, awardCount);
 	}
 }

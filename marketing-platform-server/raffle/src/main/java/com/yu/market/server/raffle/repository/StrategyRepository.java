@@ -376,4 +376,21 @@ public class StrategyRepository implements IStrategyRepository {
 
 		strategyAwardMapper.updateStrategyAwardStock(strategyAward);
 	}
+
+	/**
+	 * 查询策略ID
+	 *
+	 * @param activityId 活动ID
+	 * @return 策略ID
+	 */
+	@Override
+	public Long queryStrategyIdByActivityId(Long activityId) {
+		RaffleActivity raffleActivity = raffleActivityMapper.selectOne(new LambdaQueryWrapper<RaffleActivity>()
+				.eq(RaffleActivity::getActivityId, activityId));
+		if (raffleActivity == null) {
+			return null;
+		}
+
+		return raffleActivity.getStrategyId();
+	}
 }
