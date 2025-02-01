@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.yu</groupId>
-        <artifactId>marketing-platform-server</artifactId>
+        <artifactId>marketing-platform-v1</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>activity</artifactId>
+    <artifactId>markrting-platform-infrastruture</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -31,7 +31,13 @@
 
         <dependency>
             <groupId>com.yu</groupId>
-            <artifactId>task</artifactId>
+            <artifactId>marketing-platform-server</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yu</groupId>
+            <artifactId>activity</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
@@ -40,6 +46,5 @@
             <artifactId>raffle</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-
     </dependencies>
 </project>

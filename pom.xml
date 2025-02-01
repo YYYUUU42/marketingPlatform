@@ -13,6 +13,7 @@
         <module>marketing-platform-model</module>
         <module>marketing-platform-server</module>
         <module>marketing-platform-main</module>
+        <module>markrting-platform-infrastruture</module>
     </modules>
 
     <properties>

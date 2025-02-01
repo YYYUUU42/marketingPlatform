@@ -8,7 +8,7 @@ import com.yu.market.common.exception.ServiceException;
 import com.yu.market.server.raffle.model.bo.StrategyAwardBO;
 import com.yu.market.server.raffle.model.bo.StrategyBO;
 import com.yu.market.server.raffle.model.bo.StrategyRuleBO;
-import com.yu.market.server.raffle.repository.StrategyRepository;
+import com.yu.market.server.raffle.repository.IStrategyRepository;
 import com.yu.market.server.raffle.service.armory.IStrategyArmory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import static com.yu.market.common.exception.errorCode.BaseErrorCode.STRATEGY_RU
 @RequiredArgsConstructor
 public class StrategyArmoryImpl implements IStrategyArmory {
 
-	private final StrategyRepository strategyRepository;
+	private final IStrategyRepository strategyRepository;
 
 	/**
 	 * 装配抽奖策略配置，触发的时机为活动审核通过后进行调用

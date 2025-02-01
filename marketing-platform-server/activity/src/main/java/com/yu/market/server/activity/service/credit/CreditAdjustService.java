@@ -1,7 +1,9 @@
 package com.yu.market.server.activity.service.credit;
 
 import com.yu.market.server.activity.model.bo.TradeBO;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CreditAdjustService implements ICreditAdjustService{
 
 

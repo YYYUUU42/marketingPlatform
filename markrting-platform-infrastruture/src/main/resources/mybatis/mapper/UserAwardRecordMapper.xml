@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yu.market.infrastructure.mapper.UserAwardRecordMapper">
+
+    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.pojo.UserAwardRecord">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="activityId" column="activity_id" jdbcType="BIGINT"/>
+            <result property="strategyId" column="strategy_id" jdbcType="BIGINT"/>
+            <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+            <result property="awardId" column="award_id" jdbcType="INTEGER"/>
+            <result property="awardTitle" column="award_title" jdbcType="VARCHAR"/>
+            <result property="awardTime" column="award_time" jdbcType="TIMESTAMP"/>
+            <result property="awardState" column="award_state" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_id,activity_id,
+        strategy_id,order_id,award_id,
+        award_title,award_time,award_state,
+        create_time,update_time
+    </sql>
+
+    <update id="updateAwardRecordCompletedState">
+        update user_award_record
+        set award_state = 'completed'
+        where user_id = #{userId}
+          and order_id = #{orderId}
+          and award_state = 'create'
+    </update>
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yu.market.infrastructure.mapper.StrategyRuleMapper">
+
+    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.pojo.StrategyRule">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="strategyId" column="strategy_id" jdbcType="BIGINT"/>
+            <result property="awardId" column="award_id" jdbcType="INTEGER"/>
+            <result property="ruleType" column="rule_type" jdbcType="TINYINT"/>
+            <result property="ruleModel" column="rule_model" jdbcType="VARCHAR"/>
+            <result property="ruleValue" column="rule_value" jdbcType="VARCHAR"/>
+            <result property="ruleDesc" column="rule_desc" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,strategy_id,award_id,
+        rule_type,rule_model,rule_value,
+        rule_desc,create_time,update_time
+    </sql>
+</mapper>

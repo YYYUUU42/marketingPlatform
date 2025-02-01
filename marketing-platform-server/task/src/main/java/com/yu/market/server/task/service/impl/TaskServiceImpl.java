@@ -1,7 +1,7 @@
 package com.yu.market.server.task.service.impl;
 
 import com.yu.market.server.task.model.bo.TaskBO;
-import com.yu.market.server.task.repository.TaskRepository;
+import com.yu.market.server.task.repository.ITaskRepository;
 import com.yu.market.server.task.service.ITaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TaskServiceImpl implements ITaskService {
 
-	private final TaskRepository taskRepository;
+	private final ITaskRepository taskRepository;
 
 	/**
 	 * 查询发送MQ失败和超时1分钟未发送的MQ

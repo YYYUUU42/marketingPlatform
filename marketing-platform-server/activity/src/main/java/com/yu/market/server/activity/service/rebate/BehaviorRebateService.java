@@ -11,8 +11,7 @@ import com.yu.market.server.activity.model.aggregate.BehaviorRebateAggregate;
 import com.yu.market.server.activity.model.bo.BehaviorBO;
 import com.yu.market.server.activity.model.bo.BehaviorRebateOrderBO;
 import com.yu.market.server.activity.model.bo.DailyBehaviorRebateBO;
-import com.yu.market.server.activity.model.enums.BehaviorTypeEnum;
-import com.yu.market.server.activity.respository.impl.BehaviorRebateRepository;
+import com.yu.market.server.activity.respository.IBehaviorRebateRepository;
 import com.yu.market.server.task.model.enums.TaskStateEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BehaviorRebateService implements IBehaviorRebateService{
 
-	private final BehaviorRebateRepository behaviorRebateRepository;
+	private final IBehaviorRebateRepository behaviorRebateRepository;
 	private final SendRebateMessageEvent sendRebateMessageEvent;
 
 	/**
