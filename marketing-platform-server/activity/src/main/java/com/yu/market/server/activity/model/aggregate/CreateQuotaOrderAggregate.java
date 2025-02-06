@@ -1,6 +1,7 @@
 package com.yu.market.server.activity.model.aggregate;
 
 import com.yu.market.server.activity.model.bo.ActivityOrderBO;
+import com.yu.market.server.activity.model.enums.OrderStateEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -46,5 +47,9 @@ public class CreateQuotaOrderAggregate {
      * 活动订单实体
      */
     private ActivityOrderBO activityOrderBO;
+
+    public void setOrderState(OrderStateEnum orderState) {
+        this.activityOrderBO.setState(orderState);
+    }
 
 }

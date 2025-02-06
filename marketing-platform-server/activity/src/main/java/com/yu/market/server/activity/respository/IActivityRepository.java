@@ -5,6 +5,7 @@ import com.yu.market.server.activity.model.aggregate.CreatePartakeOrderAggregate
 import com.yu.market.server.activity.model.aggregate.CreateQuotaOrderAggregate;
 import com.yu.market.server.activity.model.bo.*;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -30,10 +31,12 @@ public interface IActivityRepository {
      */
     ActivityCountBO queryRaffleActivityCountByActivityCountId(Long activityCountId);
 
+    void doSaveNoPayOrder(CreateQuotaOrderAggregate createOrderAggregate);
+
     /**
      * 保存订单
      */
-    void doSaveOrder(CreateQuotaOrderAggregate createOrderAggregate);
+    void doSaveCreditPayOrder(CreateQuotaOrderAggregate createOrderAggregate);
 
     /**
      * 缓存活动 sku 数量
@@ -100,4 +103,8 @@ public interface IActivityRepository {
     List<SkuProductBO> querySkuProductBOListByActivityId(Long activityId);
 
     ActivityAccountBO queryActivityAccountBO(Long activityId, String userId);
+
+    UnpaidActivityOrderBO queryUnpaidActivityOrder(SkuRechargeBO skuRechargeBO);
+
+    BigDecimal queryUserCreditAccountAmount(String userId);
 }

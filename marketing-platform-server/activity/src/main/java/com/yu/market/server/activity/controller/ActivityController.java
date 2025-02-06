@@ -7,11 +7,12 @@ import com.yu.market.common.exception.ServiceException;
 import com.yu.market.common.exception.errorCode.BaseErrorCode;
 import com.yu.market.common.result.ResponseResult;
 import com.yu.market.common.utils.BeanCopyUtil;
+import com.yu.market.common.utils.RandomStringUtil;
 import com.yu.market.server.activity.model.bo.*;
 import com.yu.market.server.activity.model.dto.ActivityRaffleDTO;
+import com.yu.market.server.activity.model.dto.SkuProductShopCartDTO;
 import com.yu.market.server.activity.model.dto.UserActivityAccountDTO;
-import com.yu.market.server.activity.model.enums.AwardStateEnum;
-import com.yu.market.server.activity.model.enums.BehaviorTypeEnum;
+import com.yu.market.server.activity.model.enums.*;
 import com.yu.market.server.activity.model.vo.ActivityRaffleVO;
 import com.yu.market.server.activity.model.vo.SkuProductVO;
 import com.yu.market.server.activity.model.vo.UserActivityAccountVO;
@@ -204,6 +205,41 @@ public class ActivityController {
 		log.info("查询用户积分值完成 userId:{} adjustAmount:{}", userId, creditAccountBO.getAdjustAmount());
 
 		return ResponseResult.success(creditAccountBO.getAdjustAmount());
+	}
+
+	/**
+	 * 积分兑换商品
+	 */
+	@PostMapping("/creditPayExchangeSku")
+	public ResponseResult<Boolean> creditPayExchangeSku(@RequestBody SkuProductShopCartDTO dto) {
+		log.info("积分兑换商品开始 userId:{} sku:{}", dto.getUserId(), dto.getSku());
+		if (StrUtil.isBlank(dto.getUserId()) || dto.getSku() == null) {
+			throw new ServiceException(BaseErrorCode.ILLEGAL_PARAMETER);
+		}
+
+
+		// 创建兑换商品sku订单，outBusinessNo 每次创建出一个单
+		SkuRechargeBO skuRechargeBO = SkuRechargeBO.builder()
+				.userId(dto.getUserId())
+				.sku(dto.getSku())
+				.outBusinessNo(RandomStringUtil.randomNumeric(12))
+				.orderTradeType(OrderTradeTypeEnum.credit_pay_trade)
+				.build();
+		UnpaidActivityOrderBO unpaidActivityOrderBO = raffleActivityAccountQuotaService.createOrder(skuRechargeBO);
+		log.info("积分兑换商品，创建订单完成 userId:{} sku:{} outBusinessNo:{}", dto.getUserId(), dto.getSku(), unpaidActivityOrderBO.getOutBusinessNo());
+
+		// 支付兑换商品
+		TradeBO tradeBO = TradeBO.builder()
+				.userId(unpaidActivityOrderBO.getUserId())
+				.tradeName(TradeNameEnum.CONVERT_SKU)
+				.tradeType(TradeTypeEnum.REVERSE)
+				.amount(unpaidActivityOrderBO.getPayAmount().negate())
+				.outBusinessNo(unpaidActivityOrderBO.getOutBusinessNo())
+				.build();
+		String orderId = creditAdjustService.createOrder(tradeBO);
+		log.info("积分兑换商品，支付订单完成  userId:{} sku:{} orderId:{}", dto.getUserId(), dto.getSku(), orderId);
+
+		return ResponseResult.success(true);
 	}
 
 }

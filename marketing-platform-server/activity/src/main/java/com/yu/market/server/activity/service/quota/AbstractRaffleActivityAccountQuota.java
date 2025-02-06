@@ -4,15 +4,17 @@ import cn.hutool.core.util.StrUtil;
 import com.yu.market.common.exception.ServiceException;
 import com.yu.market.common.exception.errorCode.BaseErrorCode;
 import com.yu.market.server.activity.model.aggregate.CreateQuotaOrderAggregate;
-import com.yu.market.server.activity.model.bo.ActivityBO;
-import com.yu.market.server.activity.model.bo.ActivityCountBO;
-import com.yu.market.server.activity.model.bo.ActivitySkuBO;
-import com.yu.market.server.activity.model.bo.SkuRechargeBO;
+import com.yu.market.server.activity.model.bo.*;
+import com.yu.market.server.activity.model.enums.OrderTradeTypeEnum;
 import com.yu.market.server.activity.respository.IActivityRepository;
 import com.yu.market.server.activity.service.IRaffleActivityAccountQuotaService;
+import com.yu.market.server.activity.service.quota.policy.ITradePolicy;
 import com.yu.market.server.activity.service.quota.rule.IActionChain;
 import com.yu.market.server.activity.service.quota.rule.factory.DefaultActivityChainFactory;
 import lombok.extern.slf4j.Slf4j;
+
+import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * @author yu
@@ -22,8 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractRaffleActivityAccountQuota extends RaffleActivityAccountQuotaSupport implements IRaffleActivityAccountQuotaService {
 
-	public AbstractRaffleActivityAccountQuota(IActivityRepository activityRepository, DefaultActivityChainFactory defaultActivityChainFactory) {
+	private final Map<String, ITradePolicy> tradePolicyGroup;
+	
+	public AbstractRaffleActivityAccountQuota(IActivityRepository activityRepository, DefaultActivityChainFactory defaultActivityChainFactory, Map<String, ITradePolicy> tradePolicyGroup) {
 		super(activityRepository, defaultActivityChainFactory);
+		this.tradePolicyGroup = tradePolicyGroup;
 	}
 
 	/**
@@ -35,7 +40,7 @@ public abstract class AbstractRaffleActivityAccountQuota extends RaffleActivityA
 	 * @return 活动ID
 	 */
 	@Override
-	public String createOrder(SkuRechargeBO skuRechargeBO) {
+	public UnpaidActivityOrderBO createOrder(SkuRechargeBO skuRechargeBO) {
 		// 参数校验
 		String userId = skuRechargeBO.getUserId();
 		Long sku = skuRechargeBO.getSku();
@@ -44,14 +49,26 @@ public abstract class AbstractRaffleActivityAccountQuota extends RaffleActivityA
 			throw new ServiceException(BaseErrorCode.ILLEGAL_PARAMETER);
 		}
 
-		// 通过sku查询活动信息
+		// 查询未支付订单「一个月以内的未支付订单」& 支付类型查询，非支付的走兑换
+		if (skuRechargeBO.getOrderTradeType().equals(OrderTradeTypeEnum.credit_pay_trade)) {
+			UnpaidActivityOrderBO unpaidActivityOrderBO = activityRepository.queryUnpaidActivityOrder(skuRechargeBO);
+			if (unpaidActivityOrderBO != null) {
+				return unpaidActivityOrderBO;
+			}
+		}
+
+		// 查询基础信息（sku、活动、次数）
 		ActivitySkuBO activitySkuBO = queryActivitySku(sku);
-
-		// 查询活动信息
 		ActivityBO activityBO = queryRaffleActivityByActivityId(activitySkuBO.getActivityId());
-
-		// 查询次数信息（用户在活动上可参与的次数）
 		ActivityCountBO activityCountBO = queryRaffleActivityCountByActivityCountId(activitySkuBO.getActivityCountId());
+
+		// 账户额度 【交易属性的兑换，需要校验额度账户】
+		if (skuRechargeBO.getOrderTradeType().equals(OrderTradeTypeEnum.credit_pay_trade)) {
+			BigDecimal availableAmount = activityRepository.queryUserCreditAccountAmount(userId);
+			if (activitySkuBO.getProductAmount().compareTo(availableAmount) > 0){
+				throw new ServiceException(BaseErrorCode.USER_CREDIT_ACCOUNT_NO_AVAILABLE_AMOUNT);
+			}
+		}
 
 		// 活动动作规则校验
 		IActionChain actionChain = defaultActivityChainFactory.openActionChain();
@@ -60,14 +77,19 @@ public abstract class AbstractRaffleActivityAccountQuota extends RaffleActivityA
 		// 构建订单聚合对象
 		CreateQuotaOrderAggregate createOrderAggregate = buildOrderAggregate(skuRechargeBO, activitySkuBO, activityBO, activityCountBO);
 
-		// 保存订单
-		doSaveOrder(createOrderAggregate);
+		// 交易策略 - 【积分兑换，支付类订单】【返利无支付交易订单，直接充值到账】【订单状态变更交易类型策略】
+		ITradePolicy tradePolicy = tradePolicyGroup.get(skuRechargeBO.getOrderTradeType().getCode());
+		tradePolicy.trade(createOrderAggregate);
 
-		// 返回单号
-		return createOrderAggregate.getActivityOrderBO().getOrderId();
+		// 返回订单信息
+		ActivityOrderBO activityOrderBO = createOrderAggregate.getActivityOrderBO();
+		return UnpaidActivityOrderBO.builder()
+				.userId(userId)
+				.orderId(activityOrderBO.getOrderId())
+				.outBusinessNo(activityOrderBO.getOutBusinessNo())
+				.payAmount(activityOrderBO.getPayAmount())
+				.build();
 	}
 
 	protected abstract CreateQuotaOrderAggregate buildOrderAggregate(SkuRechargeBO skuRechargeBO, ActivitySkuBO activitySkuBO, ActivityBO activityBO, ActivityCountBO activityCountBO);
-
-	protected abstract void doSaveOrder(CreateQuotaOrderAggregate createOrderAggregate);
 }

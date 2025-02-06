@@ -50,6 +50,7 @@ public enum BaseErrorCode implements IErrorCode {
     ACCOUNT_QUOTA_ERROR("ERR_BIZ_007","账户总额度不足"),
     ACCOUNT_MONTH_QUOTA_ERROR("ERR_BIZ_008","账户月额度不足"),
     ACCOUNT_DAY_QUOTA_ERROR("ERR_BIZ_009","账户日额度不足"),
+    USER_CREDIT_ACCOUNT_NO_AVAILABLE_AMOUNT("ERR_CREDIT_001", "用户积分账户额度不足")
     ;
 
 

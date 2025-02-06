@@ -7,10 +7,12 @@ import com.yu.market.server.activity.model.bo.*;
 import com.yu.market.server.activity.model.enums.OrderStateEnum;
 import com.yu.market.server.activity.respository.IActivityRepository;
 import com.yu.market.server.activity.service.IRaffleActivitySkuStockService;
+import com.yu.market.server.activity.service.quota.policy.ITradePolicy;
 import com.yu.market.server.activity.service.quota.rule.factory.DefaultActivityChainFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * @author yu
@@ -20,8 +22,8 @@ import java.util.Date;
 @Service
 public class RaffleActivityAccountQuotaService extends AbstractRaffleActivityAccountQuota implements IRaffleActivitySkuStockService {
 
-	public RaffleActivityAccountQuotaService(IActivityRepository activityRepository, DefaultActivityChainFactory defaultActivityChainFactory) {
-		super(activityRepository, defaultActivityChainFactory);
+	public RaffleActivityAccountQuotaService(IActivityRepository activityRepository, DefaultActivityChainFactory defaultActivityChainFactory, Map<String, ITradePolicy> tradePolicyGroup) {
+		super(activityRepository, defaultActivityChainFactory, tradePolicyGroup);
 	}
 
 	@Override
@@ -52,12 +54,6 @@ public class RaffleActivityAccountQuotaService extends AbstractRaffleActivityAcc
 				.activityOrderBO(activityOrderBO)
 				.build();
 	}
-
-	@Override
-	protected void doSaveOrder(CreateQuotaOrderAggregate createOrderAggregate) {
-		activityRepository.doSaveOrder(createOrderAggregate);
-	}
-
 
 	/**
 	 * 获取活动sku库存消耗队列
