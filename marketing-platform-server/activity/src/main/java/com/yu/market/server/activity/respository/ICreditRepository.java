@@ -1,6 +1,7 @@
 package com.yu.market.server.activity.respository;
 
 import com.yu.market.server.activity.model.aggregate.TradeAggregate;
+import com.yu.market.server.activity.model.bo.CreditAccountBO;
 
 /**
  * @author yu
@@ -10,5 +11,7 @@ import com.yu.market.server.activity.model.aggregate.TradeAggregate;
 public interface ICreditRepository {
 
     void saveUserCreditTradeOrder(TradeAggregate tradeAggregate);
+
+    CreditAccountBO queryUserCreditAccount(String userId);
 
 }

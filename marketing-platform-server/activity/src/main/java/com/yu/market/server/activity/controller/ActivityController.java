@@ -20,6 +20,7 @@ import com.yu.market.server.activity.service.IRaffleActivityPartakeService;
 import com.yu.market.server.activity.service.IRaffleActivitySkuProductService;
 import com.yu.market.server.activity.service.armory.IActivityArmory;
 import com.yu.market.server.activity.service.award.IAwardService;
+import com.yu.market.server.activity.service.credit.ICreditAdjustService;
 import com.yu.market.server.activity.service.rebate.IBehaviorRebateService;
 import com.yu.market.server.raffle.model.bo.RaffleAwardBO;
 import com.yu.market.server.raffle.model.bo.RaffleFactorBO;
@@ -29,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -48,6 +50,7 @@ public class ActivityController {
 	private final IBehaviorRebateService behaviorRebateService;
 	private final IRaffleActivitySkuProductService raffleActivitySkuProductService;
 	private final IRaffleActivityAccountQuotaService raffleActivityAccountQuotaService;
+	private final ICreditAdjustService creditAdjustService;
 
 	private final SimpleDateFormat dateFormatDay = new SimpleDateFormat("yyyyMMdd");
 
@@ -186,5 +189,21 @@ public class ActivityController {
 		return ResponseResult.success(userActivityAccountVO);
 	}
 
+	/**
+	 * 查询用户积分值
+	 */
+	@GetMapping("/queryUserCreditAccount")
+	public ResponseResult<BigDecimal> queryUserCreditAccount(@RequestParam String userId){
+		log.info("查询用户积分值开始 userId:{}", userId);
+		if (StrUtil.isBlank(userId)){
+			throw new ServiceException(BaseErrorCode.ILLEGAL_PARAMETER);
+		}
+
+		CreditAccountBO creditAccountBO = creditAdjustService.queryUserCreditAccount(userId);
+
+		log.info("查询用户积分值完成 userId:{} adjustAmount:{}", userId, creditAccountBO.getAdjustAmount());
+
+		return ResponseResult.success(creditAccountBO.getAdjustAmount());
+	}
 
 }

@@ -1,6 +1,7 @@
 package com.yu.market.server.activity.service.credit;
 
 
+import com.yu.market.server.activity.model.bo.CreditAccountBO;
 import com.yu.market.server.activity.model.bo.TradeBO;
 
 /**
@@ -17,5 +18,12 @@ public interface ICreditAdjustService {
 	 * @return 单号
 	 */
 	String createOrder(TradeBO tradeBO);
+
+	/**
+	 * 查询用户积分账户
+	 * @param userId 用户ID
+	 * @return 积分账户实体
+	 */
+	CreditAccountBO queryUserCreditAccount(String userId);
 
 }

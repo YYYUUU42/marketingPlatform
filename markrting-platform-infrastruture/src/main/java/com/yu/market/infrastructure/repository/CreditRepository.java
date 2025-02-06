@@ -17,6 +17,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -81,6 +82,18 @@ public class CreditRepository implements ICreditRepository {
 			}
 			return 1;
 		});
+	}
+
+	@Override
+	public CreditAccountBO queryUserCreditAccount(String userId) {
+		UserCreditAccount userCreditAccount = userCreditAccountMapper.selectOne(new LambdaQueryWrapper<UserCreditAccount>()
+				.eq(UserCreditAccount::getUserId, userId));
+		BigDecimal availableAmount = BigDecimal.ZERO;
+		if (userCreditAccount != null) {
+			availableAmount = userCreditAccount.getAvailableAmount();
+		}
+
+		return CreditAccountBO.builder().userId(userId).adjustAmount(availableAmount).build();
 	}
 
 
