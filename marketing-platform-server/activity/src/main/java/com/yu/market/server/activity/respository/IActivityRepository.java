@@ -96,4 +96,6 @@ public interface IActivityRepository {
      * 根据活动ID获得活动sku列表
      */
     List<ActivitySkuBO> queryActivitySkuListByActivityId(Long activityId);
+
+    List<SkuProductBO> querySkuProductBOListByActivityId(Long activityId);
 }

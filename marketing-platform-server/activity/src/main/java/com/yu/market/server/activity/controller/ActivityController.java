@@ -6,15 +6,15 @@ import cn.hutool.json.JSONUtil;
 import com.yu.market.common.exception.ServiceException;
 import com.yu.market.common.exception.errorCode.BaseErrorCode;
 import com.yu.market.common.result.ResponseResult;
-import com.yu.market.server.activity.model.bo.BehaviorBO;
-import com.yu.market.server.activity.model.bo.BehaviorRebateOrderBO;
-import com.yu.market.server.activity.model.bo.UserAwardRecordBO;
-import com.yu.market.server.activity.model.bo.UserRaffleOrderBO;
+import com.yu.market.common.utils.BeanCopyUtil;
+import com.yu.market.server.activity.model.bo.*;
 import com.yu.market.server.activity.model.dto.ActivityRaffleDTO;
 import com.yu.market.server.activity.model.enums.AwardStateEnum;
 import com.yu.market.server.activity.model.enums.BehaviorTypeEnum;
 import com.yu.market.server.activity.model.vo.ActivityRaffleVO;
+import com.yu.market.server.activity.model.vo.SkuProductVO;
 import com.yu.market.server.activity.service.IRaffleActivityPartakeService;
+import com.yu.market.server.activity.service.IRaffleActivitySkuProductService;
 import com.yu.market.server.activity.service.armory.IActivityArmory;
 import com.yu.market.server.activity.service.award.IAwardService;
 import com.yu.market.server.activity.service.rebate.IBehaviorRebateService;
@@ -43,6 +43,7 @@ public class ActivityController {
 	private final IRaffleStrategy raffleStrategy;
 	private final IAwardService awardService;
 	private final IBehaviorRebateService behaviorRebateService;
+	private final IRaffleActivitySkuProductService raffleActivitySkuProductService;
 
 	private final SimpleDateFormat dateFormatDay = new SimpleDateFormat("yyyyMMdd");
 
@@ -145,5 +146,25 @@ public class ActivityController {
 
 		return ResponseResult.success(!CollectionUtil.isEmpty(behaviorRebateOrderBOList));
 	}
+
+	/**
+	 * 查询sku商品集合
+	 */
+	@GetMapping("/querySkuProductListByActivityId")
+	public ResponseResult<List<SkuProductVO>> querySkuProductListByActivityId(@RequestParam Long activityId) {
+		log.info("查询sku商品集合开始 activityId:{}", activityId);
+		if (activityId ==null){
+			throw new ServiceException(BaseErrorCode.ILLEGAL_PARAMETER);
+		}
+
+		// 查询商品并封装数据
+		List<SkuProductBO> skuProductBOList = raffleActivitySkuProductService.querySkuProductBOListByActivityId(activityId);
+		List<SkuProductVO> skuProductVOS = BeanCopyUtil.copyListProperties(skuProductBOList, SkuProductVO.class);
+
+		log.info("查询sku商品集合完成 activityId:{} skuProductResponseDTOS:{}", activityId, JSONUtil.toJsonStr(skuProductVOS));
+
+		return ResponseResult.success(skuProductVOS);
+	}
+
 
 }

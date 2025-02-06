@@ -25,6 +25,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -54,6 +55,8 @@ public class ActivityRepository implements IActivityRepository {
 	private final ActivitySkuStockZeroMessageEvent activitySkuStockZeroMessageEvent;
 	private final RaffleActivityAccountMonthMapper raffleActivityAccountMonthMapper;
 	private final RaffleActivityAccountDayMapper raffleActivityAccountDayMapper;
+	private final RaffleActivitySkuMapper raffleActivitySkuMapper;
+	private final RaffleActivityCountMapper raffleActivityCountMapper;
 
 
 	/**
@@ -458,6 +461,25 @@ public class ActivityRepository implements IActivityRepository {
 				.eq(RaffleActivitySku::getActivityId, activityId));
 
 		return BeanCopyUtil.copyListProperties(raffleActivitySkuList, ActivitySkuBO.class);
+	}
+
+	@Override
+	public List<SkuProductBO> querySkuProductBOListByActivityId(Long activityId) {
+		List<RaffleActivitySku> raffleActivitySkuList = raffleActivitySkuMapper.selectList(new LambdaQueryWrapper<RaffleActivitySku>()
+				.eq(RaffleActivitySku::getActivityId, activityId));
+
+		List<SkuProductBO> skuProductBOList = new ArrayList<>(raffleActivitySkuList.size());
+		for (RaffleActivitySku raffleActivitySku : raffleActivitySkuList) {
+			RaffleActivityCount raffleActivityCount = raffleActivityCountMapper.selectOne(new LambdaQueryWrapper<RaffleActivityCount>()
+					.eq(RaffleActivityCount::getActivityCountId, raffleActivitySku.getActivityCountId()));
+
+			SkuProductBO.ActivityCount activityCount = BeanCopyUtil.copyProperties(raffleActivityCount, SkuProductBO.ActivityCount.class);
+			SkuProductBO skuProductBO = BeanCopyUtil.copyProperties(raffleActivitySku, SkuProductBO.class);
+			skuProductBO.setActivityCount(activityCount);
+			skuProductBOList.add(skuProductBO);
+		}
+
+		return skuProductBOList;
 	}
 
 }
