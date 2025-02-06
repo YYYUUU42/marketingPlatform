@@ -2,6 +2,7 @@ package com.yu.market.server.activity.respository;
 
 
 import com.yu.market.server.activity.model.aggregate.BehaviorRebateAggregate;
+import com.yu.market.server.activity.model.bo.BehaviorRebateOrderBO;
 import com.yu.market.server.activity.model.bo.DailyBehaviorRebateBO;
 import com.yu.market.server.activity.model.enums.BehaviorTypeEnum;
 
@@ -17,5 +18,7 @@ public interface IBehaviorRebateRepository {
 	List<DailyBehaviorRebateBO> queryDailyBehaviorRebateConfig(BehaviorTypeEnum behaviorTypeEnum);
 
 	void saveUserRebateRecord(String userId, List<BehaviorRebateAggregate> behaviorRebateAggregates);
+
+	List<BehaviorRebateOrderBO> queryOrderByOutBusinessNo(String userId, String outBusinessNo);
 
 }

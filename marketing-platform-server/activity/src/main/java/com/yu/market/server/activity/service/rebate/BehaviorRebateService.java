@@ -92,4 +92,16 @@ public class BehaviorRebateService implements IBehaviorRebateService{
 
 		return orderIds;
 	}
+
+	/**
+	 * 根据外部单号查询订单
+	 *
+	 * @param userId        用户ID
+	 * @param outBusinessNo 业务ID；签到则是日期字符串，支付则是外部的业务ID
+	 * @return 返利订单实体
+	 */
+	@Override
+	public List<BehaviorRebateOrderBO> queryOrderByOutBusinessNo(String userId, String outBusinessNo) {
+		return behaviorRebateRepository.queryOrderByOutBusinessNo(userId,outBusinessNo);
+	}
 }

@@ -1,10 +1,13 @@
 package com.yu.market.server.activity.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.yu.market.common.exception.ServiceException;
 import com.yu.market.common.exception.errorCode.BaseErrorCode;
 import com.yu.market.common.result.ResponseResult;
 import com.yu.market.server.activity.model.bo.BehaviorBO;
+import com.yu.market.server.activity.model.bo.BehaviorRebateOrderBO;
 import com.yu.market.server.activity.model.bo.UserAwardRecordBO;
 import com.yu.market.server.activity.model.bo.UserRaffleOrderBO;
 import com.yu.market.server.activity.model.dto.ActivityRaffleDTO;
@@ -14,6 +17,7 @@ import com.yu.market.server.activity.model.vo.ActivityRaffleVO;
 import com.yu.market.server.activity.service.IRaffleActivityPartakeService;
 import com.yu.market.server.activity.service.armory.IActivityArmory;
 import com.yu.market.server.activity.service.award.IAwardService;
+import com.yu.market.server.activity.service.rebate.IBehaviorRebateService;
 import com.yu.market.server.raffle.model.bo.RaffleAwardBO;
 import com.yu.market.server.raffle.model.bo.RaffleFactorBO;
 import com.yu.market.server.raffle.service.armory.IStrategyArmory;
@@ -24,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -37,6 +42,7 @@ public class ActivityController {
 	private final IRaffleActivityPartakeService raffleActivityPartakeService;
 	private final IRaffleStrategy raffleStrategy;
 	private final IAwardService awardService;
+	private final IBehaviorRebateService behaviorRebateService;
 
 	private final SimpleDateFormat dateFormatDay = new SimpleDateFormat("yyyyMMdd");
 
@@ -99,6 +105,45 @@ public class ActivityController {
 
 		return ResponseResult.success(vo);
 
+	}
+
+	/**
+	 * 日历签到返利
+	 */
+	@PostMapping("/calendarSignRebate")
+	public ResponseResult<Boolean> calendarSignRebate(@RequestParam String userId) {
+		log.info("日历签到返利开始 userId:{}", userId);
+		if (StrUtil.isBlank(userId)) {
+			throw new ServiceException(BaseErrorCode.ILLEGAL_PARAMETER);
+		}
+
+		BehaviorBO behaviorBO = BehaviorBO.builder()
+				.userId(userId)
+				.behaviorTypeEnum(BehaviorTypeEnum.SIGN)
+				.outBusinessNo(dateFormatDay.format(new Date()))
+				.build();
+
+		List<String> orderIds = behaviorRebateService.createOrder(behaviorBO);
+		log.info("日历签到返利完成 userId:{} orderIds: {}", userId, JSONUtil.toJsonStr(orderIds));
+
+		return ResponseResult.success(true);
+	}
+
+	/**
+	 * 判断是否签到
+	 */
+	@GetMapping("/isCalendarSignRebate")
+	public ResponseResult<Boolean> isCalendarSignRebate(@RequestParam String userId) {
+		log.info("查询用户是否完成日历签到返利开始 userId:{}", userId);
+		if (StrUtil.isBlank(userId)) {
+			throw new ServiceException(BaseErrorCode.ILLEGAL_PARAMETER);
+		}
+
+		String outBusinessNo = dateFormatDay.format(new Date());
+		List<BehaviorRebateOrderBO> behaviorRebateOrderBOList = behaviorRebateService.queryOrderByOutBusinessNo(userId, outBusinessNo);
+		log.info("查询用户是否完成日历签到返利完成 userId:{} orders.size:{}", userId, behaviorRebateOrderBOList.size());
+
+		return ResponseResult.success(!CollectionUtil.isEmpty(behaviorRebateOrderBOList));
 	}
 
 }

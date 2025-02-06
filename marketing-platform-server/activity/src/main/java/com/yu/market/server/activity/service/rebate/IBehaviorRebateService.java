@@ -2,6 +2,7 @@ package com.yu.market.server.activity.service.rebate;
 
 
 import com.yu.market.server.activity.model.bo.BehaviorBO;
+import com.yu.market.server.activity.model.bo.BehaviorRebateOrderBO;
 
 import java.util.List;
 
@@ -20,4 +21,13 @@ public interface IBehaviorRebateService {
      */
     List<String> createOrder(BehaviorBO behaviorBO);
 
+
+    /**
+     * 根据外部单号查询订单
+     *
+     * @param userId        用户ID
+     * @param outBusinessNo 业务ID；签到则是日期字符串，支付则是外部的业务ID
+     * @return 返利订单实体
+     */
+    List<BehaviorRebateOrderBO> queryOrderByOutBusinessNo(String userId, String outBusinessNo);
 }

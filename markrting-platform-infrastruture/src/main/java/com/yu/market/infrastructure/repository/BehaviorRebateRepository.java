@@ -1,5 +1,6 @@
 package com.yu.market.infrastructure.repository;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yu.market.common.event.EventPublisher;
@@ -21,6 +22,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -87,5 +89,17 @@ public class BehaviorRebateRepository implements IBehaviorRebateRepository {
 			}
 		}
 
+	}
+
+	@Override
+	public List<BehaviorRebateOrderBO> queryOrderByOutBusinessNo(String userId, String outBusinessNo) {
+		List<UserBehaviorRebateOrder> userBehaviorRebateOrderList = userBehaviorRebateOrderMapper.selectList(new LambdaQueryWrapper<UserBehaviorRebateOrder>()
+				.eq(UserBehaviorRebateOrder::getUserId, userId)
+				.eq(UserBehaviorRebateOrder::getOutBusinessNo, outBusinessNo));
+		if (CollectionUtil.isEmpty(userBehaviorRebateOrderList)) {
+			return List.of();
+		}
+
+		return BeanCopyUtil.copyListProperties(userBehaviorRebateOrderList, BehaviorRebateOrderBO.class);
 	}
 }
