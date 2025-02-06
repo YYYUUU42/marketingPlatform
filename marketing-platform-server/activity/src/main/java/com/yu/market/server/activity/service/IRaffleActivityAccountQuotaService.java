@@ -1,6 +1,7 @@
 package com.yu.market.server.activity.service;
 
 
+import com.yu.market.server.activity.model.bo.ActivityAccountBO;
 import com.yu.market.server.activity.model.bo.SkuRechargeBO;
 
 /**
@@ -19,5 +20,14 @@ public interface IRaffleActivityAccountQuotaService {
      * @return 活动ID
      */
     String createOrder(SkuRechargeBO skuRechargeBO);
+
+    /**
+     * 查询活动账户额度「总、月、日」
+     *
+     * @param activityId 活动ID
+     * @param userId     用户ID
+     * @return 账户实体
+     */
+    ActivityAccountBO queryActivityAccountBO(Long activityId, String userId);
 
 }

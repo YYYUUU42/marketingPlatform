@@ -482,4 +482,64 @@ public class ActivityRepository implements IActivityRepository {
 		return skuProductBOList;
 	}
 
+	@Override
+	public ActivityAccountBO queryActivityAccountBO(Long activityId, String userId) {
+		// 查询总账户额度
+		RaffleActivityAccount raffleActivityAccount = activityAccountMapper.selectOne(new LambdaQueryWrapper<RaffleActivityAccount>()
+				.eq(RaffleActivityAccount::getActivityId, activityId)
+				.eq(RaffleActivityAccount::getUserId, userId));
+		if (raffleActivityAccount == null) {
+			return ActivityAccountBO.builder()
+					.activityId(activityId)
+					.userId(userId)
+					.totalCount(0)
+					.totalCountSurplus(0)
+					.monthCount(0)
+					.monthCountSurplus(0)
+					.dayCount(0)
+					.dayCountSurplus(0)
+					.build();
+		}
+
+		// 查询月账户额度
+		RaffleActivityAccountMonth raffleActivityAccountMonth = raffleActivityAccountMonthMapper.selectOne(new LambdaQueryWrapper<RaffleActivityAccountMonth>()
+				.eq(RaffleActivityAccountMonth::getActivityId, activityId)
+				.eq(RaffleActivityAccountMonth::getUserId, userId)
+				.eq(RaffleActivityAccountMonth::getMonth, RaffleActivityAccountMonth.currentMonth()));
+
+		// 查询日账户额度
+		RaffleActivityAccountDay raffleActivityAccountDay = raffleActivityAccountDayMapper.selectOne(new LambdaQueryWrapper<RaffleActivityAccountDay>()
+				.eq(RaffleActivityAccountDay::getActivityId, activityId)
+				.eq(RaffleActivityAccountDay::getUserId, userId)
+				.eq(RaffleActivityAccountDay::getDay, RaffleActivityAccountDay.currentDay()));
+
+		ActivityAccountBO activityAccountBO = ActivityAccountBO.builder()
+				.userId(userId)
+				.activityId(activityId)
+				.totalCount(raffleActivityAccount.getTotalCount())
+				.totalCountSurplus(raffleActivityAccount.getTotalCountSurplus())
+				.build();
+
+		// 如果没有创建日账户，则从总账户中获取日总额度填充。「当新创建日账户时，会获得总账户额度」
+		if (null == raffleActivityAccountDay) {
+			activityAccountBO.setDayCount(raffleActivityAccount.getDayCount());
+			activityAccountBO.setDayCountSurplus(raffleActivityAccount.getDayCount());
+		} else {
+			activityAccountBO.setDayCount(raffleActivityAccountDay.getDayCount());
+			activityAccountBO.setDayCountSurplus(raffleActivityAccountDay.getDayCountSurplus());
+		}
+
+		// 如果没有创建月账户，则从总账户中获取月总额度填充。「当新创建日账户时，会获得总账户额度」
+		if (null == raffleActivityAccountMonth) {
+			activityAccountBO.setMonthCount(raffleActivityAccount.getMonthCount());
+			activityAccountBO.setMonthCountSurplus(raffleActivityAccount.getMonthCount());
+		} else {
+			activityAccountBO.setMonthCount(raffleActivityAccountMonth.getMonthCount());
+			activityAccountBO.setMonthCountSurplus(raffleActivityAccountMonth.getMonthCountSurplus());
+		}
+
+
+		return activityAccountBO;
+	}
+
 }

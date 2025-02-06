@@ -97,4 +97,16 @@ public class RaffleActivityAccountQuotaService extends AbstractRaffleActivityAcc
 	public void clearActivitySkuStock(Long sku) {
 		activityRepository.clearActivitySkuStock(sku);
 	}
+
+	/**
+	 * 查询活动账户额度「总、月、日」
+	 *
+	 * @param activityId 活动ID
+	 * @param userId     用户ID
+	 * @return 账户实体
+	 */
+	@Override
+	public ActivityAccountBO queryActivityAccountBO(Long activityId, String userId) {
+		return activityRepository.queryActivityAccountBO(activityId,userId);
+	}
 }

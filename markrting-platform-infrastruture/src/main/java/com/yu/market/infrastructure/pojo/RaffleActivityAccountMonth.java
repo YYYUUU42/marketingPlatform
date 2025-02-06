@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import lombok.Data;
@@ -18,6 +19,9 @@ import lombok.Data;
 @TableName(value ="raffle_activity_account_month")
 @Data
 public class RaffleActivityAccountMonth implements Serializable {
+
+    private final static SimpleDateFormat dateFormatMonth = new SimpleDateFormat("yyyy-MM");
+
     /**
      * 自增ID
      */
@@ -62,5 +66,9 @@ public class RaffleActivityAccountMonth implements Serializable {
     @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
+    public static String currentMonth() {
+        return dateFormatMonth.format(new Date());
+    }
 
 }

@@ -9,10 +9,13 @@ import com.yu.market.common.result.ResponseResult;
 import com.yu.market.common.utils.BeanCopyUtil;
 import com.yu.market.server.activity.model.bo.*;
 import com.yu.market.server.activity.model.dto.ActivityRaffleDTO;
+import com.yu.market.server.activity.model.dto.UserActivityAccountDTO;
 import com.yu.market.server.activity.model.enums.AwardStateEnum;
 import com.yu.market.server.activity.model.enums.BehaviorTypeEnum;
 import com.yu.market.server.activity.model.vo.ActivityRaffleVO;
 import com.yu.market.server.activity.model.vo.SkuProductVO;
+import com.yu.market.server.activity.model.vo.UserActivityAccountVO;
+import com.yu.market.server.activity.service.IRaffleActivityAccountQuotaService;
 import com.yu.market.server.activity.service.IRaffleActivityPartakeService;
 import com.yu.market.server.activity.service.IRaffleActivitySkuProductService;
 import com.yu.market.server.activity.service.armory.IActivityArmory;
@@ -44,6 +47,7 @@ public class ActivityController {
 	private final IAwardService awardService;
 	private final IBehaviorRebateService behaviorRebateService;
 	private final IRaffleActivitySkuProductService raffleActivitySkuProductService;
+	private final IRaffleActivityAccountQuotaService raffleActivityAccountQuotaService;
 
 	private final SimpleDateFormat dateFormatDay = new SimpleDateFormat("yyyyMMdd");
 
@@ -164,6 +168,22 @@ public class ActivityController {
 		log.info("查询sku商品集合完成 activityId:{} skuProductResponseDTOS:{}", activityId, JSONUtil.toJsonStr(skuProductVOS));
 
 		return ResponseResult.success(skuProductVOS);
+	}
+
+	/**
+	 * 查询账户额度
+	 */
+	@GetMapping("/queryUserActivityAccount")
+	public ResponseResult<UserActivityAccountVO> queryUserActivityAccount(@RequestBody UserActivityAccountDTO dto) {
+		log.info("查询用户活动账户开始 userId:{} activityId:{}", dto.getUserId(), dto.getActivityId());
+		if (StrUtil.isBlank(dto.getUserId()) || dto.getActivityId() == null) {
+			throw new ServiceException(BaseErrorCode.ILLEGAL_PARAMETER);
+		}
+
+		ActivityAccountBO activityAccountBO = raffleActivityAccountQuotaService.queryActivityAccountBO(dto.getActivityId(), dto.getUserId());
+		UserActivityAccountVO userActivityAccountVO = BeanCopyUtil.copyProperties(activityAccountBO, UserActivityAccountVO.class);
+
+		return ResponseResult.success(userActivityAccountVO);
 	}
 
 

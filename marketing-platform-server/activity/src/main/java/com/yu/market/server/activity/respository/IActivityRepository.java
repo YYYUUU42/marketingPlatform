@@ -98,4 +98,6 @@ public interface IActivityRepository {
     List<ActivitySkuBO> queryActivitySkuListByActivityId(Long activityId);
 
     List<SkuProductBO> querySkuProductBOListByActivityId(Long activityId);
+
+    ActivityAccountBO queryActivityAccountBO(Long activityId, String userId);
 }

@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import lombok.Data;
 
@@ -17,6 +18,9 @@ import lombok.Data;
 @TableName(value ="raffle_activity_account_day")
 @Data
 public class RaffleActivityAccountDay implements Serializable {
+
+    private final static SimpleDateFormat dateFormatDay = new SimpleDateFormat("yyyy-MM-dd");
+
     /**
      * 自增ID
      */
@@ -62,4 +66,7 @@ public class RaffleActivityAccountDay implements Serializable {
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
+    public static String currentDay() {
+        return dateFormatDay.format(new Date());
+    }
 }
