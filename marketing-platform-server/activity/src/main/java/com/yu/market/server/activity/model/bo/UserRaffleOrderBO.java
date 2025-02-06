@@ -45,13 +45,16 @@ public class UserRaffleOrderBO {
 	private String orderId;
 
 	/**
-	 * 订单状态；create-创建、used-已使用、cancel-已作废
+	 * 下单时间
 	 */
 	private Date orderTime;
 
 	/**
-	 * 创建时间
+	 * 订单状态；create-创建、used-已使用、cancel-已作废
 	 */
 	private UserRaffleOrderStateEnum orderState;
+
+	/** 结束时间 */
+	private Date endDateTime;
 
 }

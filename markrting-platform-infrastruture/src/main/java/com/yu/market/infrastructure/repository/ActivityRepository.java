@@ -81,6 +81,9 @@ public class ActivityRepository implements IActivityRepository {
 
 		RaffleActivity raffleActivity = activityMapper.selectOne(new LambdaQueryWrapper<RaffleActivity>()
 				.eq(RaffleActivity::getActivityId, activityId));
+		if (raffleActivity == null){
+			return new ActivityBO();
+		}
 		activityBO = BeanCopyUtil.copyProperties(raffleActivity, ActivityBO.class);
 
 		redisService.setValue(cacheKey, activityBO);
@@ -101,6 +104,10 @@ public class ActivityRepository implements IActivityRepository {
 
 		RaffleActivityCount raffleActivityCount = activityCountMapper.selectOne(new LambdaQueryWrapper<RaffleActivityCount>()
 				.eq(RaffleActivityCount::getActivityCountId, activityCountBO));
+		if (raffleActivityCount == null) {
+			return new ActivityCountBO();
+		}
+
 		activityCountBO  = BeanCopyUtil.copyProperties(raffleActivityCount, ActivityCountBO.class);
 
 		redisService.setValue(cacheKey, activityCountBO);

@@ -1,5 +1,6 @@
 package com.yu.market.server.activity.model.bo;
 
+import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -8,6 +9,7 @@ import lombok.Data;
  * @date 2025-01-26
  */
 @Data
+@Builder
 public class PartakeRaffleActivityBO {
 
     /**
