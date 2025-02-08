@@ -1,6 +1,7 @@
 package com.yu.market.infrastructure.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.yu.market.common.contants.Constants;
 import com.yu.market.common.contants.RedisKey;
 import com.yu.market.common.event.EventPublisher;
@@ -13,6 +14,7 @@ import com.yu.market.server.activity.envent.ActivitySkuStockZeroMessageEvent;
 import com.yu.market.server.activity.model.aggregate.CreatePartakeOrderAggregate;
 import com.yu.market.server.activity.model.aggregate.CreateQuotaOrderAggregate;
 import com.yu.market.server.activity.model.bo.*;
+import com.yu.market.server.activity.model.enums.ActivityStateEnum;
 import com.yu.market.server.activity.model.enums.OrderStateEnum;
 import com.yu.market.server.activity.model.enums.UserRaffleOrderStateEnum;
 import com.yu.market.infrastructure.pojo.*;
@@ -92,6 +94,7 @@ public class ActivityRepository implements IActivityRepository {
 			return new ActivityBO();
 		}
 		activityBO = BeanCopyUtil.copyProperties(raffleActivity, ActivityBO.class);
+		activityBO.setState(ActivityStateEnum.valueOf(raffleActivity.getState()));
 
 		redisService.setValue(cacheKey, activityBO);
 		return activityBO;
@@ -350,7 +353,8 @@ public class ActivityRepository implements IActivityRepository {
 		UserRaffleOrder userRaffleOrder = userRaffleOrderMapper.selectOne(new LambdaQueryWrapper<UserRaffleOrder>()
 				.eq(UserRaffleOrder::getUserId, partakeRaffleActivityBO.getUserId())
 				.eq(UserRaffleOrder::getActivityId, partakeRaffleActivityBO.getUserId())
-				.eq(UserRaffleOrder::getOrderState, OrderStateEnum.create.getCode()));
+				.eq(UserRaffleOrder::getOrderState, OrderStateEnum.create.getCode())
+				.last("LIMIT 1"));
 		if (userRaffleOrder == null) {
 			return null;
 		}

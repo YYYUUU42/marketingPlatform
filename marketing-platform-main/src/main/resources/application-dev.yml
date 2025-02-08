@@ -33,10 +33,6 @@ spring:
     connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
 
 
-mybatis:
-  mapper-locations: classpath:/mybatis/mapper/mysql/*.xml
-  config-location:  classpath:/mybatis/config/mybatis-config.xml
-
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

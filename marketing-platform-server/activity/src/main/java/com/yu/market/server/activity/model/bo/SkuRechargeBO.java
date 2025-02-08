@@ -1,8 +1,10 @@
 package com.yu.market.server.activity.model.bo;
 
 import com.yu.market.server.activity.model.enums.OrderTradeTypeEnum;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author yu
@@ -11,6 +13,8 @@ import lombok.Data;
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SkuRechargeBO {
 
 	/**

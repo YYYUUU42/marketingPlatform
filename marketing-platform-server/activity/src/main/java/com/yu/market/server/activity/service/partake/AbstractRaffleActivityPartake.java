@@ -60,7 +60,7 @@ public abstract class AbstractRaffleActivityPartake implements IRaffleActivityPa
 		ActivityBO activityBO = activityRepository.queryRaffleActivityByActivityId(activityId);
 
 		// 校验；活动状态
-		if (activityBO.getState().equals(ActivityStateEnum.open)) {
+		if (!activityBO.getState().equals(ActivityStateEnum.open)) {
 			throw new ServiceException(BaseErrorCode.ACTIVITY_STATE_ERROR);
 		}
 		// 校验；活动日期「开始时间 <- 当前时间 -> 结束时间」
@@ -78,16 +78,17 @@ public abstract class AbstractRaffleActivityPartake implements IRaffleActivityPa
 		// 额度账户过滤&返回账户构建对象
 		CreatePartakeOrderAggregate createPartakeOrderAggregate = this.doFilterAccount(userId, activityId, currentDate);
 
-		// 4. 构建订单
+		// 构建订单
 		UserRaffleOrderBO userRaffleOrder = this.buildUserRaffleOrder(userId, activityId, currentDate);
 
-		// 5. 填充抽奖单实体对象
+		// 填充抽奖单实体对象
 		createPartakeOrderAggregate.setUserRaffleOrderBO(userRaffleOrder);
 
-		// 6. 保存聚合对象 - 一个领域内的一个聚合是一个事务操作
+		// 保存聚合对象 - 一个领域内的一个聚合是一个事务操作
 		activityRepository.saveCreatePartakeOrderAggregate(createPartakeOrderAggregate);
+		log.info("创建活动抽奖单完成 userId:{} activityId:{} orderId:{}", userId, activityId, userRaffleOrder.getOrderId());
 
-		// 7. 返回订单信息
+		// 返回订单信息
 		return userRaffleOrder;
 	}
 
