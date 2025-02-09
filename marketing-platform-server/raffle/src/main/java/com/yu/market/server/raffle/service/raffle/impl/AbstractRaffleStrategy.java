@@ -5,6 +5,7 @@ import com.yu.market.common.exception.ServiceException;
 import com.yu.market.common.exception.errorCode.BaseErrorCode;
 import com.yu.market.server.raffle.model.bo.RaffleAwardBO;
 import com.yu.market.server.raffle.model.bo.RaffleFactorBO;
+import com.yu.market.server.raffle.model.bo.StrategyAwardBO;
 import com.yu.market.server.raffle.repository.IStrategyRepository;
 import com.yu.market.server.raffle.service.armory.IStrategyDispatch;
 import com.yu.market.server.raffle.service.raffle.IRaffleStrategy;
@@ -23,7 +24,7 @@ public abstract class AbstractRaffleStrategy implements IRaffleStrategy {
 	/**
 	 * 策略仓储服务 -> 仓储层提供数据
 	 */
-	protected IStrategyRepository repository;
+	protected IStrategyRepository strategyRepository;
 
 	/**
 	 * 策略调度服务 -> 只负责抽奖处理，通过新增接口的方式，隔离职责，不需要使用方关心或者调用抽奖的初始化
@@ -40,8 +41,8 @@ public abstract class AbstractRaffleStrategy implements IRaffleStrategy {
 	 */
 	protected final DefaultTreeFactory defaultTreeFactory;
 
-	public AbstractRaffleStrategy(IStrategyRepository repository, IStrategyDispatch strategyDispatch, DefaultChainFactory defaultChainFactory, DefaultTreeFactory defaultTreeFactory) {
-		this.repository = repository;
+	public AbstractRaffleStrategy(IStrategyRepository strategyRepository, IStrategyDispatch strategyDispatch, DefaultChainFactory defaultChainFactory, DefaultTreeFactory defaultTreeFactory) {
+		this.strategyRepository = strategyRepository;
 		this.strategyDispatch = strategyDispatch;
 		this.defaultChainFactory = defaultChainFactory;
 		this.defaultTreeFactory = defaultTreeFactory;
@@ -61,9 +62,7 @@ public abstract class AbstractRaffleStrategy implements IRaffleStrategy {
 		DefaultChainFactory.StrategyAward chainStrategyAwardVO = raffleLogicChain(userId, strategyId);
 		log.info("抽奖策略计算-责任链 {} {} {} {}", userId, strategyId, chainStrategyAwardVO.getAwardId(), chainStrategyAwardVO.getLogicModel());
 		if (!chainStrategyAwardVO.getLogicModel().equals(DefaultChainFactory.LogicModel.RULE_DEFAULT.getCode())) {
-			return RaffleAwardBO.builder()
-					.awardId(chainStrategyAwardVO.getAwardId())
-					.build();
+			return buildRaffleAwardBO(strategyId, chainStrategyAwardVO.getAwardId(), chainStrategyAwardVO.getAwardRuleValue());
 		}
 
 		// 规则树抽奖过滤 - 奖品ID，会根据抽奖次数判断、库存判断、兜底兜里返回最终的可获得奖品信息
@@ -71,9 +70,16 @@ public abstract class AbstractRaffleStrategy implements IRaffleStrategy {
 		log.info("抽奖策略计算-规则树 {} {} {} {}", userId, strategyId, treeStrategyAwardVO.getAwardId(), treeStrategyAwardVO.getAwardRuleValue());
 
 		// 返回抽奖结果
+		return buildRaffleAwardBO(strategyId, treeStrategyAwardVO.getAwardId(), treeStrategyAwardVO.getAwardRuleValue());
+	}
+
+	private RaffleAwardBO buildRaffleAwardBO(Long strategyId, Integer awardId, String awardConfig) {
+		StrategyAwardBO strategyAwardBO = strategyRepository.queryStrategyAwardBO(strategyId, awardId);
 		return RaffleAwardBO.builder()
-				.awardId(treeStrategyAwardVO.getAwardId())
-				.awardConfig(treeStrategyAwardVO.getAwardRuleValue())
+				.awardId(awardId)
+				.awardTitle(strategyAwardBO.getAwardTitle())
+				.awardConfig(awardConfig)
+				.sort(strategyAwardBO.getSort())
 				.build();
 	}
 

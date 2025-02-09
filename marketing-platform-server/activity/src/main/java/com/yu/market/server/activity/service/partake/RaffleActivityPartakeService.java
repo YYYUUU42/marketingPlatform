@@ -49,6 +49,7 @@ public class RaffleActivityPartakeService extends AbstractRaffleActivityPartake{
 		boolean isExistAccountMonth = activityAccountMonthBO != null;
 		if (activityAccountMonthBO == null) {
 			activityAccountMonthBO = BeanCopyUtil.copyProperties(activityAccountBO, ActivityAccountMonthBO.class);
+			activityAccountMonthBO.setMonth(month);
 		}
 
 		// 查询日账户额度
@@ -60,6 +61,7 @@ public class RaffleActivityPartakeService extends AbstractRaffleActivityPartake{
 		boolean isExistAccountDay = activityAccountDayBO != null;
 		if (activityAccountDayBO == null) {
 			activityAccountDayBO = BeanCopyUtil.copyProperties(activityAccountBO, ActivityAccountDayBO.class);
+			activityAccountDayBO.setDay(day);
 		}
 
 		return CreatePartakeOrderAggregate.builder()

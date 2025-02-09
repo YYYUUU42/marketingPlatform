@@ -53,10 +53,18 @@
     </update>
 
     <update id="updateActivityAccountMonthSurplusImageQuota">
-
+        update raffle_activity_account
+        set month_count_surplus = #{monthCountSurplus} - 1,
+            update_time         = now()
+        where user_id = #{userId}
+          and activity_id = #{activityId}
     </update>
 
     <update id="updateActivityAccountDaySurplusImageQuota">
-
+        update raffle_activity_account
+        set day_count_surplus = #{dayCountSurplus} - 1,
+            update_time       = now()
+        where user_id = #{userId}
+          and activity_id = #{activityId}
     </update>
 </mapper>

@@ -7,6 +7,7 @@ import com.yu.market.common.contants.RedisKey;
 import com.yu.market.common.exception.ServiceException;
 import com.yu.market.common.exception.errorCode.BaseErrorCode;
 import com.yu.market.common.redis.IRedisService;
+import com.yu.market.common.utils.BeanCopyUtil;
 import com.yu.market.server.raffle.model.bo.*;
 import com.yu.market.server.raffle.model.enums.RuleLimitType;
 import com.yu.market.server.raffle.model.enums.RuleLogicCheckType;
@@ -393,5 +394,31 @@ public class StrategyRepository implements IStrategyRepository {
 		}
 
 		return raffleActivity.getStrategyId();
+	}
+
+	/**
+	 * 根据策略ID+奖品ID的唯一值组合，查询奖品信息
+	 *
+	 * @param strategyId 策略ID
+	 * @param awardId    奖品ID
+	 * @return 奖品信息
+	 */
+	@Override
+	public StrategyAwardBO queryStrategyAwardBO(Long strategyId, Integer awardId) {
+		// 优先从缓存获取
+		String cacheKey = RedisKey.STRATEGY_AWARD_KEY + strategyId + Constants.UNDERLINE + awardId;
+		StrategyAwardBO strategyAwardBO = redisService.getValue(cacheKey);
+		if (strategyAwardBO != null) {
+			return strategyAwardBO;
+		}
+		StrategyAward strategyAward = strategyAwardMapper.selectOne(new LambdaQueryWrapper<StrategyAward>()
+				.eq(StrategyAward::getStrategyId, strategyId)
+				.eq(StrategyAward::getAwardId, awardId));
+
+		strategyAwardBO = BeanCopyUtil.copyProperties(strategyAward, StrategyAwardBO.class);
+
+		redisService.setValue(cacheKey, strategyAwardBO);
+
+		return strategyAwardBO;
 	}
 }

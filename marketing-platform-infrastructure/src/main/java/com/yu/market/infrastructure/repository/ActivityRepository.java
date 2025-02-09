@@ -437,7 +437,6 @@ public class ActivityRepository implements IActivityRepository {
 	public void saveCreatePartakeOrderAggregate(CreatePartakeOrderAggregate createPartakeOrderAggregate) {
 		String userId = createPartakeOrderAggregate.getUserId();
 		Long activityId = createPartakeOrderAggregate.getActivityId();
-		ActivityAccountBO activityAccountBO = createPartakeOrderAggregate.getActivityAccountBO();
 		ActivityAccountMonthBO activityAccountMonthBO = createPartakeOrderAggregate.getActivityAccountMonthBO();
 		ActivityAccountDayBO activityAccountDayBO = createPartakeOrderAggregate.getActivityAccountDayBO();
 		UserRaffleOrderBO userRaffleOrderBO = createPartakeOrderAggregate.getUserRaffleOrderBO();
@@ -469,7 +468,7 @@ public class ActivityRepository implements IActivityRepository {
 					raffleActivityAccountMonth.setMonthCountSurplus(activityAccountMonthBO.getMonthCountSurplus() - 1);
 					activityAccountMonthMapper.insert(raffleActivityAccountMonth);
 
-					activityAccountMapper.updateActivityAccountDaySurplusImageQuota(userId, activityId, activityAccountMonthBO.getMonthCountSurplus());
+					activityAccountMapper.updateActivityAccountMonthSurplusImageQuota(userId, activityId, activityAccountMonthBO.getMonthCountSurplus());
 				}
 
 				// 创建或更新日账户，true - 存在则更新，false - 不存在则插入

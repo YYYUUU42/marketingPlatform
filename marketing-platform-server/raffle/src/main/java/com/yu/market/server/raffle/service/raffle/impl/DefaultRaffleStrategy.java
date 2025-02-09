@@ -25,24 +25,25 @@ import java.util.List;
 @Service
 public class DefaultRaffleStrategy extends AbstractRaffleStrategy implements IRaffleStock, IRaffleAward {
 
-	public DefaultRaffleStrategy(IStrategyRepository repository, IStrategyDispatch strategyDispatch, DefaultChainFactory defaultChainFactory, DefaultTreeFactory defaultTreeFactory) {
-		super(repository, strategyDispatch, defaultChainFactory, defaultTreeFactory);
+	public DefaultRaffleStrategy(IStrategyRepository strategyRepository, IStrategyDispatch strategyDispatch, DefaultChainFactory defaultChainFactory, DefaultTreeFactory defaultTreeFactory) {
+		super(strategyRepository, strategyDispatch, defaultChainFactory, defaultTreeFactory);
 	}
 
 	@Override
 	public DefaultChainFactory.StrategyAward raffleLogicChain(String userId, Long strategyId) {
+		log.info("抽奖策略-责任链 userId:{} strategyId:{}", userId, strategyId);
 		ILogicChain logicChain = defaultChainFactory.openLogicChain(strategyId);
 		return logicChain.logic(userId, strategyId);
 	}
 
 	@Override
 	public DefaultTreeFactory.StrategyAward raffleLogicTree(String userId, Long strategyId, Integer awardId) {
-		StrategyAwardRuleModelBO strategyAwardRuleModelVO = repository.queryStrategyAwardRuleModelBO(strategyId, awardId);
+		StrategyAwardRuleModelBO strategyAwardRuleModelVO = strategyRepository.queryStrategyAwardRuleModelBO(strategyId, awardId);
 		if (strategyAwardRuleModelVO == null) {
 			return DefaultTreeFactory.StrategyAward.builder().awardId(awardId).build();
 		}
 
-		RuleTreeBO ruleTreeVO = repository.queryRuleTreeBoByTreeId(strategyAwardRuleModelVO.getRuleModels());
+		RuleTreeBO ruleTreeVO = strategyRepository.queryRuleTreeBoByTreeId(strategyAwardRuleModelVO.getRuleModels());
 		if (ruleTreeVO == null) {
 			throw new ServiceException("存在抽奖策略配置的规则模型 Key，未在库表 rule_tree、rule_tree_node、rule_tree_line 配置对应的规则树信息 " + strategyAwardRuleModelVO.getRuleModels());
 		}
@@ -58,7 +59,7 @@ public class DefaultRaffleStrategy extends AbstractRaffleStrategy implements IRa
 	 */
 	@Override
 	public StrategyAwardStockKeyBO takeQueueValue()  {
-		return repository.takeQueueValue();
+		return strategyRepository.takeQueueValue();
 	}
 
 	/**
@@ -69,7 +70,7 @@ public class DefaultRaffleStrategy extends AbstractRaffleStrategy implements IRa
 	 */
 	@Override
 	public void updateStrategyAwardStock(Long strategyId, Integer awardId) {
-		repository.updateStrategyAwardStock(strategyId, awardId);
+		strategyRepository.updateStrategyAwardStock(strategyId, awardId);
 	}
 
 	/**
@@ -80,6 +81,6 @@ public class DefaultRaffleStrategy extends AbstractRaffleStrategy implements IRa
 	 */
 	@Override
 	public List<StrategyAwardBO> queryRaffleStrategyAwardList(Long strategyId) {
-		return repository.queryStrategyAwardList(strategyId);
+		return strategyRepository.queryStrategyAwardList(strategyId);
 	}
 }
