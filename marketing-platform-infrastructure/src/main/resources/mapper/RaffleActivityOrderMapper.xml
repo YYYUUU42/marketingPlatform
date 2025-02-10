@@ -30,6 +30,14 @@
         day_count,month_count,`state`,outBusinessNo,
         create_time,update_time
     </sql>
+    <update id="updateOrderCompleted" parameterType="com.yu.market.infrastructure.pojo.RaffleActivityOrder">
+        update raffle_activity_order
+        set state       = 'completed',
+            update_time = now()
+        where user_id = #{userId}
+          and out_business_no = #{outBusinessNo}
+          and state = 'wait_pay'
+    </update>
 
 
 </mapper>

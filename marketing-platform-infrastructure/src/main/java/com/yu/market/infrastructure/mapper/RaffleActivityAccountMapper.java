@@ -24,6 +24,8 @@ public interface RaffleActivityAccountMapper extends BaseMapper<RaffleActivityAc
 	int updateActivityAccountMonthSurplusImageQuota(@Param("userId") String userId, @Param("activityId") Long activityId, @Param("monthCountSurplus") Integer monthCountSurplus);
 
 	int updateActivityAccountDaySurplusImageQuota(@Param("userId") String userId, @Param("activityId") Long activityId, @Param("dayCountSurplus") Integer dayCountSurplus);
+
+	int updateAccountQuota(RaffleActivityAccount raffleActivityAccount);
 }
 
 

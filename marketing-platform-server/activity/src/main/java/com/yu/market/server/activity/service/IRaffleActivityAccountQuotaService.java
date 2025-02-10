@@ -2,6 +2,7 @@ package com.yu.market.server.activity.service;
 
 
 import com.yu.market.server.activity.model.bo.ActivityAccountBO;
+import com.yu.market.server.activity.model.bo.DeliveryOrderBO;
 import com.yu.market.server.activity.model.bo.SkuRechargeBO;
 import com.yu.market.server.activity.model.bo.UnpaidActivityOrderBO;
 
@@ -30,5 +31,12 @@ public interface IRaffleActivityAccountQuotaService {
      * @return 账户实体
      */
     ActivityAccountBO queryActivityAccountBO(Long activityId, String userId);
+
+    /**
+     * 订单出货 - 积分充值
+     *
+     * @param deliveryOrderEntity 出货单实体对象
+     */
+    void updateOrder(DeliveryOrderBO deliveryOrderEntity);
 
 }

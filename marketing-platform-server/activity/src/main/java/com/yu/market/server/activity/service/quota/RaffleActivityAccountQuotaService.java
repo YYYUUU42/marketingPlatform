@@ -40,7 +40,7 @@ public class RaffleActivityAccountQuotaService extends AbstractRaffleActivityAcc
 				.totalCount(activityCountBO.getTotalCount())
 				.dayCount(activityCountBO.getDayCount())
 				.monthCount(activityCountBO.getMonthCount())
-				.state(OrderStateEnum.completed)
+				.payAmount(activitySkuBO.getProductAmount())
 				.outBusinessNo(skuRechargeBO.getOutBusinessNo())
 				.build();
 
@@ -104,5 +104,15 @@ public class RaffleActivityAccountQuotaService extends AbstractRaffleActivityAcc
 	@Override
 	public ActivityAccountBO queryActivityAccountBO(Long activityId, String userId) {
 		return activityRepository.queryActivityAccountBO(activityId,userId);
+	}
+
+	/**
+	 * 订单出货 - 积分充值
+	 *
+	 * @param deliveryOrderEntity 出货单实体对象
+	 */
+	@Override
+	public void updateOrder(DeliveryOrderBO deliveryOrderEntity) {
+		activityRepository.updateOrder(deliveryOrderEntity);
 	}
 }

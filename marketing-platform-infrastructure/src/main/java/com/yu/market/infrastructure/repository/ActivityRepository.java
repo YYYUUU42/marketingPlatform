@@ -63,6 +63,7 @@ public class ActivityRepository implements IActivityRepository {
 	private final RaffleActivitySkuMapper raffleActivitySkuMapper;
 	private final RaffleActivityCountMapper raffleActivityCountMapper;
 	private final UserCreditAccountMapper userCreditAccountMapper;
+	private final RaffleActivityAccountMapper raffleActivityAccountMapper;
 
 
 	/**
@@ -113,7 +114,7 @@ public class ActivityRepository implements IActivityRepository {
 		}
 
 		RaffleActivityCount raffleActivityCount = activityCountMapper.selectOne(new LambdaQueryWrapper<RaffleActivityCount>()
-				.eq(RaffleActivityCount::getActivityCountId, activityCountBO));
+				.eq(RaffleActivityCount::getActivityCountId, activityCountId));
 		if (raffleActivityCount == null) {
 			return new ActivityCountBO();
 		}
@@ -619,6 +620,75 @@ public class ActivityRepository implements IActivityRepository {
 		}
 
 		return userCreditAccount.getAvailableAmount();
+	}
+
+	/**
+	 * 订单出货 - 积分充值
+	 */
+	@Override
+	public void updateOrder(DeliveryOrderBO deliveryOrderBO) {
+		RLock lock = redisService.getLock(RedisKey.ACTIVITY_ACCOUNT_UPDATE_LOCK + deliveryOrderBO.getUserId() + Constants.UNDERLINE + deliveryOrderBO.getOutBusinessNo());
+		try {
+			RaffleActivityOrder raffleActivityOrder = activityOrderMapper.selectOne(new LambdaQueryWrapper<RaffleActivityOrder>()
+					.eq(RaffleActivityOrder::getUserId, deliveryOrderBO.getUserId())
+					.eq(RaffleActivityOrder::getOutBusinessNo, deliveryOrderBO.getOutBusinessNo()));
+
+			if (raffleActivityOrder == null) {
+				return;
+			}
+
+			lock.lock(3, TimeUnit.SECONDS);
+
+			// 账户对象 - 总
+			RaffleActivityAccount raffleActivityAccount = BeanCopyUtil.copyProperties(raffleActivityOrder, RaffleActivityAccount.class);
+
+			// 账户对象 - 月
+			RaffleActivityAccountMonth raffleActivityAccountMonth = BeanCopyUtil.copyProperties(raffleActivityOrder, RaffleActivityAccountMonth.class);
+			raffleActivityAccountMonth.setMonth(RaffleActivityAccountMonth.currentMonth());
+			raffleActivityAccountMonth.setMonthCountSurplus(raffleActivityAccount.getMonthCount());
+
+			// 账户对象 - 日
+			RaffleActivityAccountDay raffleActivityAccountDay = BeanCopyUtil.copyProperties(raffleActivityAccount, RaffleActivityAccountDay.class);
+			raffleActivityAccountDay.setDay(RaffleActivityAccountDay.currentDay());
+			raffleActivityAccountDay.setDayCountSurplus(raffleActivityAccount.getDayCount());
+
+			transactionTemplate.execute(status -> {
+				try {
+					// 更新订单
+					int updateCount = activityOrderMapper.updateOrderCompleted(raffleActivityOrder);
+					if (updateCount != 1) {
+						status.setRollbackOnly();
+						return 1;
+					}
+
+					// 更新账户 - 总
+					Long count = raffleActivityAccountMapper.selectCount(new LambdaQueryWrapper<RaffleActivityAccount>()
+							.eq(RaffleActivityAccount::getUserId, deliveryOrderBO.getUserId())
+							.eq(RaffleActivityAccount::getActivityId, raffleActivityAccount.getActivityId()));
+					if (count == 0L) {
+						raffleActivityAccountMapper.insert(raffleActivityAccount);
+					}else{
+						raffleActivityAccountMapper.updateAccountQuota(raffleActivityAccount);
+					}
+
+					// 更新账户 - 月
+					raffleActivityAccountMonthMapper.addAccountQuota(raffleActivityAccountMonth);
+					// 更新账户 - 日
+					raffleActivityAccountDayMapper.addAccountQuota(raffleActivityAccountDay);
+
+					return 1;
+				} catch (DuplicateKeyException e) {
+					status.setRollbackOnly();
+					log.error("更新订单记录，完成态，唯一索引冲突 userId: {} outBusinessNo: {}", deliveryOrderBO.getUserId(), deliveryOrderBO.getOutBusinessNo(), e);
+					throw new ServiceException(BaseErrorCode.INDEX_DUP);
+				}
+			});
+		} finally {
+			if (lock.isLocked() && lock.isHeldByCurrentThread()) {
+				lock.unlock();
+			}
+		}
+
 	}
 
 }

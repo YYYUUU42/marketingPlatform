@@ -107,4 +107,9 @@ public interface IActivityRepository {
     UnpaidActivityOrderBO queryUnpaidActivityOrder(SkuRechargeBO skuRechargeBO);
 
     BigDecimal queryUserCreditAccountAmount(String userId);
+
+    /**
+     * 订单出货 - 积分充值
+     */
+    void updateOrder(DeliveryOrderBO deliveryOrderBO);
 }

@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface RaffleActivityOrderMapper extends BaseMapper<RaffleActivityOrder> {
 
+	int updateOrderCompleted(RaffleActivityOrder raffleActivityOrderReq);
 }
 
 

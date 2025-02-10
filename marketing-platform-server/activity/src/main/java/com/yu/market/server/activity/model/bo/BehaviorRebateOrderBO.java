@@ -47,6 +47,11 @@ public class BehaviorRebateOrderBO {
 	private String rebateConfig;
 
 	/**
+	 * 业务仿重ID - 外部透传，方便查询使用
+	 */
+	private String outBusinessNo;
+
+	/**
 	 * 业务ID - 拼接的唯一值
 	 */
 	private String bizId;

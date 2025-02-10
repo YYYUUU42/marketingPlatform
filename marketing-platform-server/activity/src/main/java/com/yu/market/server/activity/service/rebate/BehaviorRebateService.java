@@ -56,6 +56,7 @@ public class BehaviorRebateService implements IBehaviorRebateService{
 			behaviorRebateOrderBO.setUserId(behaviorBO.getUserId());
 			behaviorRebateOrderBO.setOrderId(String.valueOf(new SnowFlakeUtil().nextId()));
 			behaviorRebateOrderBO.setBizId(bizId);
+			behaviorRebateOrderBO.setOutBusinessNo(behaviorBO.getOutBusinessNo());
 			orderIds.add(behaviorRebateOrderBO.getOrderId());
 
 			// Mq 消息对象
