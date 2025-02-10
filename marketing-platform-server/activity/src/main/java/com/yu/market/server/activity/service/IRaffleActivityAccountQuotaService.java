@@ -39,4 +39,12 @@ public interface IRaffleActivityAccountQuotaService {
      */
     void updateOrder(DeliveryOrderBO deliveryOrderEntity);
 
+    /**
+     * 查询活动账户 - 总，参与次数
+     *
+     * @param activityId 活动ID
+     * @param userId     用户ID
+     * @return 参与次数
+     */
+    Integer queryRaffleActivityAccountPartakeCount(Long activityId, String userId);
 }

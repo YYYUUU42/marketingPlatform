@@ -109,10 +109,22 @@ public class RaffleActivityAccountQuotaService extends AbstractRaffleActivityAcc
 	/**
 	 * 订单出货 - 积分充值
 	 *
-	 * @param deliveryOrderEntity 出货单实体对象
+	 * @param deliveryOrderBO 出货单实体对象
 	 */
 	@Override
-	public void updateOrder(DeliveryOrderBO deliveryOrderEntity) {
-		activityRepository.updateOrder(deliveryOrderEntity);
+	public void updateOrder(DeliveryOrderBO deliveryOrderBO) {
+		activityRepository.updateOrder(deliveryOrderBO);
+	}
+
+	/**
+	 * 查询活动账户 - 总，参与次数
+	 *
+	 * @param activityId 活动ID
+	 * @param userId     用户ID
+	 * @return 参与次数
+	 */
+	@Override
+	public Integer queryRaffleActivityAccountPartakeCount(Long activityId, String userId) {
+		return activityRepository.queryRaffleActivityAccountPartakeCount(activityId, userId);
 	}
 }

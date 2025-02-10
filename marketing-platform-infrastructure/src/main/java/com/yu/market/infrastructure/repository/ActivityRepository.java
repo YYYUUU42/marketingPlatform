@@ -691,4 +691,16 @@ public class ActivityRepository implements IActivityRepository {
 
 	}
 
+	@Override
+	public Integer queryRaffleActivityAccountPartakeCount(Long activityId, String userId) {
+		RaffleActivityAccount raffleActivityAccount = activityAccountMapper.selectOne(new LambdaQueryWrapper<RaffleActivityAccount>()
+				.eq(RaffleActivityAccount::getActivityId, activityId)
+				.eq(RaffleActivityAccount::getUserId, userId));
+		if (raffleActivityAccount == null){
+			return 0;
+		}
+
+		return raffleActivityAccount.getTotalCount() - raffleActivityAccount.getTotalCountSurplus();
+	}
+
 }

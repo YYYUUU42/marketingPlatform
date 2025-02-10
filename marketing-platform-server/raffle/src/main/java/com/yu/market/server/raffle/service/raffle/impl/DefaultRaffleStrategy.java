@@ -2,9 +2,11 @@ package com.yu.market.server.raffle.service.raffle.impl;
 
 import com.yu.market.common.exception.ServiceException;
 import com.yu.market.server.raffle.model.bo.*;
+import com.yu.market.server.raffle.model.vo.RuleWeightVO;
 import com.yu.market.server.raffle.repository.IStrategyRepository;
 import com.yu.market.server.raffle.service.armory.IStrategyDispatch;
 import com.yu.market.server.raffle.service.raffle.IRaffleAward;
+import com.yu.market.server.raffle.service.raffle.IRaffleRule;
 import com.yu.market.server.raffle.service.raffle.IRaffleStock;
 import com.yu.market.server.raffle.service.rule.chain.ILogicChain;
 import com.yu.market.server.raffle.service.rule.chain.factory.DefaultChainFactory;
@@ -14,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -23,7 +26,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
-public class DefaultRaffleStrategy extends AbstractRaffleStrategy implements IRaffleStock, IRaffleAward {
+public class DefaultRaffleStrategy extends AbstractRaffleStrategy implements IRaffleStock, IRaffleAward, IRaffleRule {
 
 	public DefaultRaffleStrategy(IStrategyRepository strategyRepository, IStrategyDispatch strategyDispatch, DefaultChainFactory defaultChainFactory, DefaultTreeFactory defaultTreeFactory) {
 		super(strategyRepository, strategyDispatch, defaultChainFactory, defaultTreeFactory);
@@ -82,5 +85,39 @@ public class DefaultRaffleStrategy extends AbstractRaffleStrategy implements IRa
 	@Override
 	public List<StrategyAwardBO> queryRaffleStrategyAwardList(Long strategyId) {
 		return strategyRepository.queryStrategyAwardList(strategyId);
+	}
+
+	/**
+	 * 根据规则树ID集合查询奖品中加锁数量的配置「部分奖品需要抽奖N次解锁」
+	 *
+	 * @param treeIds 规则树ID值
+	 * @return key 规则树，value rule_lock 加锁值
+	 */
+	@Override
+	public Map<String, Integer> queryAwardRuleLockCount(String[] treeIds) {
+		return strategyRepository.queryAwardRuleLockCount(treeIds);
+	}
+
+	/**
+	 * 查询奖品权重配置
+	 *
+	 * @param strategyId 策略ID
+	 * @return 权重规则
+	 */
+	@Override
+	public List<RuleWeightVO> queryAwardRuleWeight(Long strategyId) {
+		return strategyRepository.queryAwardRuleWeight(strategyId);
+	}
+
+	/**
+	 * 查询奖品权重配置
+	 *
+	 * @param activityId 活动ID
+	 * @return 权重规则
+	 */
+	@Override
+	public List<RuleWeightVO> queryAwardRuleWeightByActivityId(Long activityId) {
+		Long strategyId = strategyRepository.queryStrategyIdByActivityId(activityId);
+		return queryAwardRuleWeight(strategyId);
 	}
 }

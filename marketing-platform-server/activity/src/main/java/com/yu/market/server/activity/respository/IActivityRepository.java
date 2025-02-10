@@ -112,4 +112,7 @@ public interface IActivityRepository {
      * 订单出货 - 积分充值
      */
     void updateOrder(DeliveryOrderBO deliveryOrderBO);
+
+    Integer queryRaffleActivityAccountPartakeCount(Long activityId, String userId);
+
 }

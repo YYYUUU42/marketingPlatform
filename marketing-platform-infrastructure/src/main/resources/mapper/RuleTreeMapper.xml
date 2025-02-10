@@ -19,4 +19,13 @@
         tree_desc,tree_node_rule_key,create_time,
         update_time
     </sql>
+
+    <select id="queryRuleLocks" resultType="com.yu.market.infrastructure.pojo.RuleTreeNode">
+        select tree_id, rule_value
+        from rule_tree_node
+        where rule_key = 'rule_lock' and tree_id in
+        <foreach item="treeId" index="index" collection="array" open="(" separator="," close=")">
+            #{treeId}
+        </foreach>
+    </select>
 </mapper>

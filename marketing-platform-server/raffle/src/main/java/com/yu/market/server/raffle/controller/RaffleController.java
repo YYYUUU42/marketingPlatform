@@ -41,19 +41,6 @@ public class RaffleController {
 	}
 
 	/**
-	 * 查询奖品列表
-	 */
-	@GetMapping("/queryRaffleAwardList")
-	public ResponseResult<List<RaffleAwardListVO>> queryRaffleAwardList(@RequestBody RaffleAwardListDTO raffleAwardListDTO) {
-		// 查询奖品配置
-		List<StrategyAwardBO> strategyAwardBOList = raffleAward.queryRaffleStrategyAwardList(raffleAwardListDTO.getStrategyId());
-
-		List<RaffleAwardListVO> vos = BeanCopyUtil.copyListProperties(strategyAwardBOList, RaffleAwardListVO.class);
-
-		return ResponseResult.success(vos);
-	}
-
-	/**
 	 * 随机抽奖接口
 	 */
 	@GetMapping("/randomRaffle")

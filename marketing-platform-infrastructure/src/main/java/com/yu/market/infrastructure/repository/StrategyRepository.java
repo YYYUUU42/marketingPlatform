@@ -13,13 +13,17 @@ import com.yu.market.server.raffle.model.enums.RuleLimitType;
 import com.yu.market.server.raffle.model.enums.RuleLogicCheckType;
 import com.yu.market.infrastructure.pojo.*;
 import com.yu.market.infrastructure.mapper.*;
+import com.yu.market.server.raffle.model.vo.RuleWeightVO;
 import com.yu.market.server.raffle.repository.IStrategyRepository;
+import com.yu.market.server.raffle.service.rule.chain.factory.DefaultChainFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBlockingQueue;
 import org.redisson.api.RDelayedQueue;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -420,5 +424,89 @@ public class StrategyRepository implements IStrategyRepository {
 		redisService.setValue(cacheKey, strategyAwardBO);
 
 		return strategyAwardBO;
+	}
+
+	/**
+	 * 根据规则树ID集合查询奖品中加锁数量的配置「部分奖品需要抽奖N次解锁」
+	 *
+	 * @param treeIds 规则树ID值
+	 * @return key 规则树，value rule_lock 加锁值
+	 */
+	@Override
+	public Map<String, Integer> queryAwardRuleLockCount(String[] treeIds) {
+		if (treeIds == null || treeIds.length == 0) {
+			return new HashMap<>();
+		}
+
+		List<RuleTreeNode> ruleTreeNodes = ruleTreeMapper.queryRuleLocks(treeIds);
+		Map<String, Integer> resultMap = new HashMap<>();
+		for (RuleTreeNode node : ruleTreeNodes) {
+			String treeId = node.getTreeId();
+			Integer ruleValue = Integer.valueOf(node.getRuleValue());
+			resultMap.put(treeId, ruleValue);
+		}
+
+		return resultMap;
+	}
+
+	/**
+	 * 查询奖品权重配置
+	 *
+	 * @param strategyId 策略ID
+	 * @return 权重规则
+	 */
+	@Override
+	public List<RuleWeightVO> queryAwardRuleWeight(Long strategyId) {
+		// 优先从缓存获取
+		String cacheKey = RedisKey.STRATEGY_RULE_WEIGHT_KEY + strategyId;
+		List<RuleWeightVO> ruleWeightVOS = redisService.getValue(cacheKey);
+		if (ruleWeightVOS != null) {
+			return ruleWeightVOS;
+		}
+
+		ruleWeightVOS = new ArrayList<>();
+		// 查询权重规则配置
+		StrategyRule strategyRule = strategyRuleMapper.selectOne(new LambdaQueryWrapper<StrategyRule>()
+				.eq(StrategyRule::getStrategyId, strategyId)
+				.eq(StrategyRule::getRuleType, DefaultChainFactory.LogicModel.RULE_WEIGHT.getCode()));
+		String ruleValue = "";
+		if (strategyRule != null) {
+			ruleValue = strategyRule.getRuleValue();
+		}
+
+		// 转换规则
+		StrategyRuleBO strategyRuleBO = StrategyRuleBO.builder()
+				.ruleModel(DefaultChainFactory.LogicModel.RULE_WEIGHT.getCode())
+				.ruleValue(ruleValue)
+				.build();
+		Map<String, List<Integer>> ruleWeightValues = strategyRuleBO.getRuleWeightValues();
+
+		// 遍历规则组装奖品配置
+		for (String ruleWeightKey : ruleWeightValues.keySet()) {
+			List<Integer> awardIds = ruleWeightValues.get(ruleWeightKey);
+			List<RuleWeightVO.Award> awardList = new ArrayList<>();
+			for (Integer awardId : awardIds) {
+				StrategyAward strategyAward = strategyAwardMapper.selectOne(new LambdaQueryWrapper<StrategyAward>()
+						.eq(StrategyAward::getStrategyId, strategyId)
+						.eq(StrategyAward::getAwardId, awardId));
+
+				RuleWeightVO.Award award = RuleWeightVO.Award.builder()
+						.awardId(strategyAward.getAwardId())
+						.awardTitle(strategyAward.getAwardTitle())
+						.build();
+				awardList.add(award);
+			}
+
+			ruleWeightVOS.add(RuleWeightVO.builder()
+					.ruleValue(ruleValue)
+					.weight(Integer.valueOf(ruleWeightKey.split(Constants.COLON)[0]))
+					.awardIds(awardIds)
+					.awardList(awardList)
+					.build());
+		}
+
+		redisService.setValue(cacheKey, ruleWeightVOS);
+
+		return ruleWeightVOS;
 	}
 }
