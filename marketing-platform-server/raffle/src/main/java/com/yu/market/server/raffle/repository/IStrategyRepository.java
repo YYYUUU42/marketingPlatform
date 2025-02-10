@@ -139,4 +139,11 @@ public interface IStrategyRepository {
      * @return 权重规则
      */
     List<RuleWeightVO> queryAwardRuleWeight(Long strategyId);
+
+    /**
+     * 查询有效活动的奖品配置
+     *
+     * @return 奖品配置列表
+     */
+    List<StrategyAwardStockKeyBO> queryOpenActivityStrategyAwardList();
 }

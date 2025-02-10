@@ -703,4 +703,17 @@ public class ActivityRepository implements IActivityRepository {
 		return raffleActivityAccount.getTotalCount() - raffleActivityAccount.getTotalCountSurplus();
 	}
 
+	@Override
+	public Integer queryRaffleActivityAccountDayPartakeCount(Long activityId, String userId) {
+		RaffleActivityAccountDay raffleActivityAccountDay = activityAccountDayMapper.selectOne(new LambdaQueryWrapper<RaffleActivityAccountDay>()
+				.eq(RaffleActivityAccountDay::getActivityId, activityId)
+				.eq(RaffleActivityAccountDay::getUserId, userId)
+				.eq(RaffleActivityAccountDay::getDay, RaffleActivityAccountDay.currentDay()));
+		if (raffleActivityAccountDay == null) {
+			return 0;
+		}
+
+		return raffleActivityAccountDay.getDayCount() - raffleActivityAccountDay.getDayCountSurplus();
+	}
+
 }

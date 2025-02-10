@@ -88,6 +88,28 @@ public class DefaultRaffleStrategy extends AbstractRaffleStrategy implements IRa
 	}
 
 	/**
+	 * 根据活动ID查询抽奖奖品列表配置
+	 *
+	 * @param activityId 活动ID
+	 * @return 奖品列表
+	 */
+	@Override
+	public List<StrategyAwardBO> queryRaffleStrategyAwardListByActivityId(Long activityId) {
+		Long strategyId = strategyRepository.queryStrategyIdByActivityId(activityId);
+		return queryRaffleStrategyAwardList(strategyId);
+	}
+
+	/**
+	 * 查询有效活动的奖品配置
+	 *
+	 * @return 奖品配置列表
+	 */
+	@Override
+	public List<StrategyAwardStockKeyBO> queryOpenActivityStrategyAwardList() {
+		return strategyRepository.queryOpenActivityStrategyAwardList();
+	}
+
+	/**
 	 * 根据规则树ID集合查询奖品中加锁数量的配置「部分奖品需要抽奖N次解锁」
 	 *
 	 * @param treeIds 规则树ID值

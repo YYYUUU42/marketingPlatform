@@ -509,4 +509,22 @@ public class StrategyRepository implements IStrategyRepository {
 
 		return ruleWeightVOS;
 	}
+
+	/**
+	 * 查询有效活动的奖品配置
+	 *
+	 * @return 奖品配置列表
+	 */
+	@Override
+	public List<StrategyAwardStockKeyBO> queryOpenActivityStrategyAwardList() {
+		List<StrategyAward> strategyAwardList = strategyAwardMapper.selectList(new LambdaQueryWrapper<StrategyAward>()
+				.in(StrategyAward::getStrategyId, new LambdaQueryWrapper<RaffleActivity>()
+						.eq(RaffleActivity::getState, "open")
+						.select(RaffleActivity::getStrategyId)));
+		if (CollectionUtil.isEmpty(strategyAwardList)) {
+			return List.of();
+		}
+
+		return BeanCopyUtil.copyListProperties(strategyAwardList, StrategyAwardStockKeyBO.class);
+	}
 }

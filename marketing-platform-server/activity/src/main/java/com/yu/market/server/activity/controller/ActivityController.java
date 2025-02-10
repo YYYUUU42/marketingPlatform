@@ -44,6 +44,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -292,5 +293,44 @@ public class ActivityController {
 		return ResponseResult.success(raffleStrategyRuleWeightVOList);
 	}
 
+	/**
+	 * 查询奖品列表
+	 */
+	@GetMapping("/queryRaffleAwardList")
+	public ResponseResult<List<RaffleAwardListVO>> queryRaffleAwardList(@RequestBody RaffleAwardListDTO dto) {
+		log.info("查询抽奖奖品列表配开始 userId:{} activityId：{}", dto.getUserId(), dto.getActivityId());
+		if (StrUtil.isBlank(dto.getUserId()) || dto.getActivityId() == null) {
+			throw new ServiceException(BaseErrorCode.ILLEGAL_PARAMETER);
+		}
+
+		// 查询奖品配置
+		List<StrategyAwardBO> strategyAwardBOList = raffleAward.queryRaffleStrategyAwardListByActivityId(dto.getActivityId());
+
+		// 获取规则配置
+		String[] treeIds = strategyAwardBOList.stream()
+				.map(StrategyAwardBO::getRuleModels)
+				.filter(StrUtil::isBlank)
+				.toArray(String[]::new);
+
+		// 查询规则配置 - 获取奖品的解锁限制，抽奖N次后解锁
+		Map<String, Integer> ruleLockCountMap = raffleRule.queryAwardRuleLockCount(treeIds);
+
+		// 查询抽奖次数 - 用户已经参与的抽奖次数
+		Integer dayPartakeCount = raffleActivityAccountQuotaService.queryRaffleActivityAccountDayPartakeCount(dto.getActivityId(), dto.getUserId());
+
+		// 遍历填充数据
+		List<RaffleAwardListVO> vos = new ArrayList<>(strategyAwardBOList.size());
+		for (StrategyAwardBO strategyAwardBO : strategyAwardBOList) {
+			Integer awardRuleLockCount = ruleLockCountMap.get(strategyAwardBO.getRuleModels());
+
+			RaffleAwardListVO raffleAwardListVO = BeanCopyUtil.copyProperties(strategyAwardBO, RaffleAwardListVO.class);
+			raffleAwardListVO.setAwardRuleLockCount(awardRuleLockCount);
+			raffleAwardListVO.setIsAwardUnlock(awardRuleLockCount == null || dayPartakeCount >= awardRuleLockCount);
+			raffleAwardListVO.setWaitUnLockCount(awardRuleLockCount == null || dayPartakeCount > awardRuleLockCount ? 0 : awardRuleLockCount - dayPartakeCount);
+			vos.add(raffleAwardListVO);
+		}
+
+		return ResponseResult.success(vos);
+	}
 
 }
