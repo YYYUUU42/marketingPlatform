@@ -20,6 +20,7 @@ import com.yu.market.server.raffle.service.armory.IStrategyArmory;
 import com.yu.market.server.raffle.service.raffle.IRaffleAward;
 import com.yu.market.server.raffle.service.raffle.IRaffleRule;
 import com.yu.market.server.raffle.service.raffle.IRaffleStrategy;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -55,7 +56,7 @@ public class RaffleController {
 	/**
 	 * 随机抽奖接口
 	 */
-	@GetMapping("/randomRaffle")
+	@PostMapping("/randomRaffle")
 	public ResponseResult<RaffleVO> randomRaffle(@RequestBody RaffleDTO requestDTO) {
 		log.info("随机抽奖开始 strategyId: {}", requestDTO.getStrategyId());
 
@@ -78,7 +79,7 @@ public class RaffleController {
 	/**
 	 * 查询权重规则
 	 */
-	@GetMapping("/queryRaffleStrategyRuleWeight")
+	@PostMapping("/queryRaffleStrategyRuleWeight")
 	public ResponseResult<List<RaffleStrategyRuleWeightVO>> queryRaffleStrategyRuleWeight(@RequestBody RaffleStrategyRuleWeightDTO dto) {
 		log.info("查询抽奖策略权重规则配置开始 userId:{} activityId：{}", dto.getUserId(), dto.getActivityId());
 		if (StrUtil.isBlank(dto.getUserId()) || dto.getActivityId() == null) {
@@ -117,7 +118,7 @@ public class RaffleController {
 	/**
 	 * 查询奖品列表
 	 */
-	@GetMapping("/queryRaffleAwardList")
+	@PostMapping("/queryRaffleAwardList")
 	public ResponseResult<List<RaffleAwardListVO>> queryRaffleAwardList(@RequestBody RaffleAwardListDTO dto) {
 		log.info("查询抽奖奖品列表配开始 userId:{} activityId：{}", dto.getUserId(), dto.getActivityId());
 		if (StrUtil.isBlank(dto.getUserId()) || dto.getActivityId() == null) {
@@ -153,4 +154,10 @@ public class RaffleController {
 
 		return ResponseResult.success(vos);
 	}
+
+	@PostConstruct
+	public void init() {
+		System.out.println("RaffleController has been initialized!");
+	}
+
 }

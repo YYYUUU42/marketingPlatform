@@ -27,6 +27,7 @@ import com.yu.market.server.raffle.model.bo.RaffleAwardBO;
 import com.yu.market.server.raffle.model.bo.RaffleFactorBO;
 import com.yu.market.server.raffle.service.armory.IStrategyArmory;
 import com.yu.market.server.raffle.service.raffle.IRaffleStrategy;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -176,7 +177,7 @@ public class ActivityController {
 	/**
 	 * 查询账户额度
 	 */
-	@GetMapping("/queryUserActivityAccount")
+	@PostMapping("/queryUserActivityAccount")
 	public ResponseResult<UserActivityAccountVO> queryUserActivityAccount(@RequestBody UserActivityAccountDTO dto) {
 		log.info("查询用户活动账户开始 userId:{} activityId:{}", dto.getUserId(), dto.getActivityId());
 		if (StrUtil.isBlank(dto.getUserId()) || dto.getActivityId() == null) {
@@ -239,6 +240,11 @@ public class ActivityController {
 		log.info("积分兑换商品，支付订单完成  userId:{} sku:{} orderId:{}", dto.getUserId(), dto.getSku(), orderId);
 
 		return ResponseResult.success(true);
+	}
+
+	@PostConstruct
+	public void init() {
+		System.out.println("ActivityController has been initialized!");
 	}
 
 }

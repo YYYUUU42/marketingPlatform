@@ -23,7 +23,7 @@ public class ResponseResult<T> implements Serializable {
 	/**
 	 * 返回消息
 	 */
-	private String msg;
+	private String info;
 
 	/**
 	 * 数据
@@ -43,15 +43,15 @@ public class ResponseResult<T> implements Serializable {
 	/**
 	 * 私有构造方法，强制使用静态工厂方法
 	 */
-	private ResponseResult(String code, String msg, T data) {
+	private ResponseResult(String code, String info, T data) {
 		this.code = code;
-		this.msg = msg;
+		this.info = info;
 		this.data = data;
 	}
 
 	private ResponseResult(IErrorCode errorCode, T data) {
 		this.code = errorCode.code();
-		this.msg = errorCode.message();
+		this.info = errorCode.message();
 		this.data = data;
 	}
 
@@ -64,8 +64,8 @@ public class ResponseResult<T> implements Serializable {
 		return new ResponseResult<>(SUCCESS_CODE, SUCCESS_MEG, data);
 	}
 
-	public static <T> ResponseResult<T> success(String msg, T data) {
-		return new ResponseResult<>(SUCCESS_CODE, msg, data);
+	public static <T> ResponseResult<T> success(String info, T data) {
+		return new ResponseResult<>(SUCCESS_CODE, info, data);
 	}
 
 	// 错误结果
@@ -77,7 +77,7 @@ public class ResponseResult<T> implements Serializable {
 		return new ResponseResult<>(errorCode.code(), customMessage, null);
 	}
 
-	public static <T> ResponseResult<T> error(String code, String msg) {
-		return new ResponseResult<>(code, msg, null);
+	public static <T> ResponseResult<T> error(String code, String info) {
+		return new ResponseResult<>(code, info, null);
 	}
 }
