@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yu.market.infrastructure.mapper.RuleTreeMapper">
+<mapper namespace="com.yu.market.infrastructure.raffle.mapper.RuleTreeMapper">
 
-    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.pojo.RuleTree">
+    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.raffle.pojo.RuleTree">
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="treeId" column="tree_id" jdbcType="VARCHAR"/>
             <result property="treeName" column="tree_name" jdbcType="VARCHAR"/>
@@ -20,7 +20,7 @@
         update_time
     </sql>
 
-    <select id="queryRuleLocks" resultType="com.yu.market.infrastructure.pojo.RuleTreeNode">
+    <select id="queryRuleLocks" resultType="com.yu.market.infrastructure.raffle.pojo.RuleTreeNode">
         select tree_id, rule_value
         from rule_tree_node
         where rule_key = 'rule_lock' and tree_id in

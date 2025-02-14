@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yu.market.infrastructure.mapper.StrategyAwardMapper">
+<mapper namespace="com.yu.market.infrastructure.raffle.mapper.StrategyAwardMapper">
 
-    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.pojo.StrategyAward">
+    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.raffle.pojo.StrategyAward">
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="strategyId" column="strategy_id" jdbcType="BIGINT"/>
             <result property="awardId" column="award_id" jdbcType="INTEGER"/>
@@ -26,7 +26,7 @@
         sort,create_time,update_time
     </sql>
 
-    <update id="updateStrategyAwardStock" parameterType="com.yu.market.infrastructure.pojo.StrategyAward">
+    <update id="updateStrategyAwardStock" parameterType="com.yu.market.infrastructure.raffle.pojo.StrategyAward">
         update strategy_award
         set award_count_surplus = award_count_surplus - 1
         where strategy_id = #{strategyId}

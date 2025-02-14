@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yu.market.infrastructure.mapper.RuleTreeNodeLineMapper">
+<mapper namespace="com.yu.market.infrastructure.raffle.mapper.RuleTreeNodeLineMapper">
 
-    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.pojo.RuleTreeNodeLine">
+    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.raffle.pojo.RuleTreeNodeLine">
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="treeId" column="tree_id" jdbcType="VARCHAR"/>
             <result property="ruleNodeFrom" column="rule_node_from" jdbcType="VARCHAR"/>

@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yu.market.infrastructure.mapper.RaffleActivityAccountMapper">
+<mapper namespace="com.yu.market.infrastructure.raffle.mapper.RaffleActivityAccountMapper">
 
-    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.pojo.RaffleActivityAccount">
+    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.raffle.pojo.RaffleActivityAccount">
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="userId" column="user_id" jdbcType="VARCHAR"/>
             <result property="activityId" column="activity_id" jdbcType="BIGINT"/>
@@ -68,7 +68,7 @@
           and activity_id = #{activityId}
     </update>
 
-    <update id="updateAccountQuota" parameterType="com.yu.market.infrastructure.pojo.RaffleActivityAccount">
+    <update id="updateAccountQuota" parameterType="com.yu.market.infrastructure.raffle.pojo.RaffleActivityAccount">
         update raffle_activity_account
         set total_count         = total_count + #{totalCount},
             total_count_surplus = total_count_surplus + #{totalCountSurplus},

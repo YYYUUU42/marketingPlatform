@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yu.market.infrastructure.mapper.RaffleActivitySkuMapper">
+<mapper namespace="com.yu.market.infrastructure.raffle.mapper.RaffleActivitySkuMapper">
 
-    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.pojo.RaffleActivitySku">
+    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.raffle.pojo.RaffleActivitySku">
             <id property="id" column="id" jdbcType="INTEGER"/>
             <result property="sku" column="sku" jdbcType="BIGINT"/>
             <result property="activityId" column="activity_id" jdbcType="BIGINT"/>

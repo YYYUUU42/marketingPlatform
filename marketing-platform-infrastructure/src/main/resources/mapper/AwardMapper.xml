@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yu.market.infrastructure.mapper.AwardMapper">
+<mapper namespace="com.yu.market.infrastructure.raffle.mapper.AwardMapper">
 
-    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.pojo.Award">
+    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.raffle.pojo.Award">
             <id property="id" column="id" jdbcType="INTEGER"/>
             <result property="awardId" column="award_id" jdbcType="INTEGER"/>
             <result property="awardKey" column="award_key" jdbcType="VARCHAR"/>
