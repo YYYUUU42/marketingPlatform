@@ -2,6 +2,7 @@ package com.yu.market.common.redis;
 
 import org.redisson.api.*;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -267,4 +268,15 @@ public interface IRedisService {
 
     Boolean setNx(String key, long expired, TimeUnit timeUnit);
 
+    /**
+     * 执行 Lua 脚本
+     *
+     * @param script   Lua 脚本内容
+     * @param returnType 返回值类型
+     * @param keys     相关的 Redis 键
+     * @param values   脚本中使用的参数
+     * @param <R>      返回值类型
+     * @return Lua 脚本执行结果
+     */
+    public <R> R executeLuaScript(String script, RScript.ReturnType returnType, List<Object> keys, Object... values);
 }

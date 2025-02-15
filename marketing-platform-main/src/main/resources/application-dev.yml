@@ -66,3 +66,9 @@ mq:
     send_award: send_award
     send_rebate: send_rebate
     credit_adjust_success: credit_adjust_success
+
+
+
+cache:
+  redis:
+    prefix: coupon_template
