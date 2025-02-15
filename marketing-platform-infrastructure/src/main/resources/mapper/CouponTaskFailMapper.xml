@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yu.market.infrastructure.coupon.mapper.CouponTaskFailMapper">
+
+    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.coupon.pojo.CouponTaskFail">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="batchId" column="batch_id" jdbcType="BIGINT"/>
+            <result property="jsonObject" column="json_object" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,batch_id,json_object
+    </sql>
+</mapper>

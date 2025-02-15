@@ -10,13 +10,13 @@ import lombok.Builder;
 import lombok.Data;
 
 /**
- * 优惠券模板表
- * @TableName t_coupon_template
+ * 用户优惠券表
+ * @TableName t_user_coupon
  */
-@TableName(value ="t_coupon_template")
+@TableName(value ="t_user_coupon")
 @Data
 @Builder
-public class CouponTemplate implements Serializable {
+public class UserCoupon implements Serializable {
     /**
      * ID
      */
@@ -24,34 +24,24 @@ public class CouponTemplate implements Serializable {
     private Long id;
 
     /**
-     * 优惠券名称
+     * 用户ID
      */
-    private String name;
+    private Long userId;
 
     /**
-     * 店铺编号
+     * 优惠券模板ID
      */
-    private Long shopNumber;
+    private Long couponTemplateId;
 
     /**
-     * 优惠券来源 0：店铺券 1：平台券
+     * 领取时间
      */
-    private Integer source;
+    private Date receiveTime;
 
     /**
-     * 优惠对象 0：商品专属 1：全店通用
+     * 领取次数
      */
-    private Integer target;
-
-    /**
-     * 优惠商品编码
-     */
-    private String goods;
-
-    /**
-     * 优惠类型 0：立减券 1：满减券 2：折扣券
-     */
-    private Integer type;
+    private Integer receiveCount;
 
     /**
      * 有效期开始时间
@@ -64,22 +54,17 @@ public class CouponTemplate implements Serializable {
     private Date validEndTime;
 
     /**
-     * 库存
+     * 使用时间
      */
-    private Integer stock;
+    private Date useTime;
 
     /**
-     * 领取规则
+     * 券来源 0：领券中心 1：平台发放 2：店铺领取
      */
-    private String receiveRule;
+    private Integer source;
 
     /**
-     * 消耗规则
-     */
-    private String consumeRule;
-
-    /**
-     * 优惠券状态 0：生效中 1：已结束
+     * 状态 0：未使用 1：锁定 2：已使用 3：已过期 4：已撤回
      */
     private Integer status;
 
@@ -98,11 +83,18 @@ public class CouponTemplate implements Serializable {
     /**
      * 删除标识 0：未删除 1：已删除
      */
-    @TableField(fill = FieldFill.INSERT)
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Integer delFlag;
 
     @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
+    /**
+     * 分发 Excel 表格中用户所在的行数
+     * 不建议大家这么写，应该再创建一个 DTO，然后进行包装转换。为了避免代码扩散，这里小小的不规范一次
+     */
+    @TableField(exist = false)
+    private Integer rowNum;
 
 }

@@ -133,7 +133,7 @@ public interface IRedisService {
      * @param key   键
      * @param value 值
      */
-    void addToSet(String key, String value);
+    void addToSet(String key, Object value);
 
     /**
      * 判断指定的值是否是集合的成员
@@ -278,7 +278,7 @@ public interface IRedisService {
      * @param <R>      返回值类型
      * @return Lua 脚本执行结果
      */
-    public <R> R executeLuaScript(String script, RScript.ReturnType returnType, List<Object> keys, Object... values);
+    <R> R executeLuaScript(String script, RScript.ReturnType returnType, List<Object> keys, Object... values);
 
     /**
      * 增加哈希表字段的值
@@ -288,5 +288,16 @@ public interface IRedisService {
      * @param delta 增量值
      * @return 增加后的值
      */
-    public Long incrementHashValue(String key, String field, long delta);
+    Long incrementHashValue(String key, String field, long delta);
+
+    /**
+     * 从 Redis 集合中弹出指定数量的元素
+     *
+     * @param key   Redis 集合的键
+     * @param count 要弹出的元素数量
+     * @return 弹出的元素列表
+     */
+    List<String> popFromSet(String key, int count);
+
+    RSet<Object> getSet(String key);
 }

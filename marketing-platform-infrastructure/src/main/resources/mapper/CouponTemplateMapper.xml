@@ -15,8 +15,8 @@
         <result property="validStartTime" column="valid_start_time" jdbcType="TIMESTAMP"/>
         <result property="validEndTime" column="valid_end_time" jdbcType="TIMESTAMP"/>
         <result property="stock" column="stock" jdbcType="INTEGER"/>
-        <result property="receiveRule" column="receive_rule" jdbcType="OTHER"/>
-        <result property="consumeRule" column="consume_rule" jdbcType="OTHER"/>
+        <result property="receiveRule" column="receive_rule" jdbcType="VARCHAR"/>
+        <result property="consumeRule" column="consume_rule" jdbcType="VARCHAR"/>
         <result property="status" column="status" jdbcType="TINYINT"/>
         <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
         <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
@@ -38,5 +38,13 @@
         SET stock = stock + #{number}
         WHERE shop_number = #{shopNumber}
           AND id = #{couponTemplateId}
+    </update>
+
+    <update id="decrementCouponTemplateStock">
+        UPDATE t_coupon_template
+        SET stock = stock - #{decrementStock}
+        WHERE shop_number = #{shopNumber}
+          AND id = #{couponTemplateId}
+          AND stock >= #{decrementStock}
     </update>
 </mapper>

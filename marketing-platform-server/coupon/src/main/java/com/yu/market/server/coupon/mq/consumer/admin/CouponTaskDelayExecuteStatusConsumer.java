@@ -1,7 +1,6 @@
-package com.yu.market.server.coupon.mq.consumer;
+package com.yu.market.server.coupon.mq.consumer.admin;
 
 import com.alibaba.fastjson2.JSON;
-import com.yu.market.common.contants.MerchantAdminRocketMQConstant;
 import com.yu.market.infrastructure.coupon.mapper.CouponTaskMapper;
 import com.yu.market.infrastructure.coupon.pojo.CouponTask;
 import com.yu.market.server.coupon.mq.base.MessageWrapper;
@@ -12,6 +11,9 @@ import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
 
+import static com.yu.market.common.contants.CouponRocketMQConstant.MerchantAdminRocketMQConstant.TEMPLATE_TASK_DELAY_STATUS_CG_KEY;
+import static com.yu.market.common.contants.CouponRocketMQConstant.MerchantAdminRocketMQConstant.TEMPLATE_TASK_DELAY_TOPIC_KEY;
+
 /**
  * 优惠券推送延迟执行-变更记录发送状态消费者
  * 开发时间：2024-07-13
@@ -19,8 +21,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @RocketMQMessageListener(
-        topic = MerchantAdminRocketMQConstant.TEMPLATE_TASK_DELAY_TOPIC_KEY,
-        consumerGroup = MerchantAdminRocketMQConstant.TEMPLATE_TASK_DELAY_STATUS_CG_KEY
+        topic = TEMPLATE_TASK_DELAY_TOPIC_KEY,
+        consumerGroup = TEMPLATE_TASK_DELAY_STATUS_CG_KEY
 )
 @Slf4j(topic = "CouponTaskDelayExecuteStatusConsumer")
 public class CouponTaskDelayExecuteStatusConsumer implements RocketMQListener<MessageWrapper<CouponTaskDelayEvent>> {

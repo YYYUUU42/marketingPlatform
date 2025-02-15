@@ -1,7 +1,6 @@
 package com.yu.market.server.coupon.mq.producer;
 
 import cn.hutool.core.util.StrUtil;
-import com.yu.market.common.contants.MerchantAdminRocketMQConstant;
 import com.yu.market.server.coupon.mq.base.BaseSendExtendDTO;
 import com.yu.market.server.coupon.mq.base.MessageWrapper;
 import com.yu.market.server.coupon.mq.event.CouponTaskExecuteEvent;
@@ -15,6 +14,8 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
+
+import static com.yu.market.common.contants.CouponRocketMQConstant.MerchantAdminRocketMQConstant.TEMPLATE_TASK_EXECUTE_TOPIC_KEY;
 
 /**
  * @author yu
@@ -38,7 +39,7 @@ public class CouponTaskActualExecuteProducer extends AbstractCommonSendProduceTe
                 .eventName("优惠券推送执行")
                 .keys(String.valueOf(messageSendEvent.getCouponTaskId()))
                 .delayTime(messageSendEvent.getDelayTime())
-                .topic(environment.resolvePlaceholders(MerchantAdminRocketMQConstant.TEMPLATE_TASK_EXECUTE_TOPIC_KEY))
+                .topic(environment.resolvePlaceholders(TEMPLATE_TASK_EXECUTE_TOPIC_KEY))
                 .sentTimeout(2000L)
                 .build();
     }

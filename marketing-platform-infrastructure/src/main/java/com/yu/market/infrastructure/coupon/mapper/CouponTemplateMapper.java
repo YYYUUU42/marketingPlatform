@@ -18,6 +18,15 @@ public interface CouponTemplateMapper extends BaseMapper<CouponTemplate> {
 	 * @param number           增加发行数量
 	 */
 	int increaseNumberCouponTemplate(@Param("shopNumber") Long shopNumber, @Param("couponTemplateId") String couponTemplateId, @Param("number") Integer number);
+
+	/**
+	 * 自减优惠券模板库存
+	 *
+	 * @param couponTemplateId 优惠券模板 ID
+	 * @return 是否发生记录变更
+	 */
+	int decrementCouponTemplateStock(@Param("shopNumber") Long shopNumber, @Param("couponTemplateId") Long couponTemplateId, @Param("decrementStock") Integer decrementStock);
+
 }
 
 

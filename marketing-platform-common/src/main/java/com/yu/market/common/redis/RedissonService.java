@@ -5,7 +5,7 @@ import org.redisson.api.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -88,8 +88,8 @@ public class RedissonService implements IRedisService {
         return redissonClient.getBucket(key).isExists();
     }
 
-    public void addToSet(String key, String value) {
-        RSet<String> set = redissonClient.getSet(key);
+    public void addToSet(String key, Object value) {
+        RSet<Object> set = redissonClient.getSet(key);
         set.add(value);
     }
 
@@ -205,4 +205,29 @@ public class RedissonService implements IRedisService {
         return map.addAndGet(field, delta);
     }
 
+    /**
+     * 从 Redis 集合中弹出指定数量的元素
+     *
+     * @param key   Redis 集合的键
+     * @param count 要弹出的元素数量
+     * @return 弹出的元素列表
+     */
+    public List<String> popFromSet(String key, int count) {
+        RSet<String> redisSet = redissonClient.getSet(key);
+        List<String> poppedElements = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            String element = redisSet.removeRandom();
+            if (element != null) {
+                poppedElements.add(element);
+            } else {
+                // 如果集合中没有更多元素，停止
+                break;
+            }
+        }
+        return poppedElements;
+    }
+
+    public RSet<Object> getSet(String key) {
+        return redissonClient.getSet(key);
+    }
 }

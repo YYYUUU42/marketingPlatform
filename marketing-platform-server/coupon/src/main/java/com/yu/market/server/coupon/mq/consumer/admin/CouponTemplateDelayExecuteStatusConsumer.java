@@ -1,9 +1,8 @@
-package com.yu.market.server.coupon.mq.consumer;
+package com.yu.market.server.coupon.mq.consumer.admin;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.yu.market.common.contants.MerchantAdminRocketMQConstant;
 import com.yu.market.infrastructure.coupon.mapper.CouponTemplateMapper;
 import com.yu.market.infrastructure.coupon.pojo.CouponTemplate;
 import com.yu.market.server.coupon.model.enums.CouponTemplateStatusEnum;
@@ -15,6 +14,9 @@ import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Component;
 
+import static com.yu.market.common.contants.CouponRocketMQConstant.MerchantAdminRocketMQConstant.TEMPLATE_TEMPLATE_DELAY_STATUS_CG_KEY;
+import static com.yu.market.common.contants.CouponRocketMQConstant.MerchantAdminRocketMQConstant.TEMPLATE_TEMPLATE_DELAY_TOPIC_KEY;
+
 /**
  * 优惠券模板推送延迟执行-变更记录状态消费者
  * 开发时间：2024-08-21
@@ -22,8 +24,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @RocketMQMessageListener(
-        topic = MerchantAdminRocketMQConstant.TEMPLATE_TEMPLATE_DELAY_TOPIC_KEY,
-        consumerGroup = MerchantAdminRocketMQConstant.TEMPLATE_TEMPLATE_DELAY_STATUS_CG_KEY
+        topic = TEMPLATE_TEMPLATE_DELAY_TOPIC_KEY,
+        consumerGroup = TEMPLATE_TEMPLATE_DELAY_STATUS_CG_KEY
 )
 @Slf4j(topic = "CouponTemplateDelayExecuteStatusConsumer")
 public class CouponTemplateDelayExecuteStatusConsumer implements RocketMQListener<MessageWrapper<CouponTemplateDelayEvent>> {
