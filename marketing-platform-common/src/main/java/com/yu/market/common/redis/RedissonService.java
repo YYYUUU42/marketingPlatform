@@ -192,4 +192,17 @@ public class RedissonService implements IRedisService {
         return redissonClient.getScript().eval(RScript.Mode.READ_WRITE, script, returnType, keys, values);
     }
 
+    /**
+     * 增加哈希表字段的值
+     *
+     * @param key   哈希表的键
+     * @param field 哈希表中的字段
+     * @param delta 增量值
+     * @return 增加后的值
+     */
+    public Long incrementHashValue(String key, String field, long delta) {
+        RMap<String, Long> map = redissonClient.getMap(key);
+        return map.addAndGet(field, delta);
+    }
+
 }

@@ -279,4 +279,14 @@ public interface IRedisService {
      * @return Lua 脚本执行结果
      */
     public <R> R executeLuaScript(String script, RScript.ReturnType returnType, List<Object> keys, Object... values);
+
+    /**
+     * 增加哈希表字段的值
+     *
+     * @param key   哈希表的键
+     * @param field 哈希表中的字段
+     * @param delta 增量值
+     * @return 增加后的值
+     */
+    public Long incrementHashValue(String key, String field, long delta);
 }

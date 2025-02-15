@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yu.market.infrastructure.coupon.mapper.CouponTemplateMapper">
+
+    <resultMap id="BaseResultMap" type="com.yu.market.infrastructure.coupon.pojo.CouponTemplate">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="shopNumber" column="shop_number" jdbcType="BIGINT"/>
+        <result property="source" column="source" jdbcType="TINYINT"/>
+        <result property="target" column="target" jdbcType="TINYINT"/>
+        <result property="goods" column="goods" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="TINYINT"/>
+        <result property="validStartTime" column="valid_start_time" jdbcType="TIMESTAMP"/>
+        <result property="validEndTime" column="valid_end_time" jdbcType="TIMESTAMP"/>
+        <result property="stock" column="stock" jdbcType="INTEGER"/>
+        <result property="receiveRule" column="receive_rule" jdbcType="OTHER"/>
+        <result property="consumeRule" column="consume_rule" jdbcType="OTHER"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="delFlag" column="del_flag" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id
+        ,name,shop_number,
+        source,target,goods,
+        type,valid_start_time,valid_end_time,
+        stock,receive_rule,consume_rule,
+        status,create_time,update_time,
+        del_flag
+    </sql>
+
+    <update id="increaseNumberCouponTemplate">
+        UPDATE t_coupon_template
+        SET stock = stock + #{number}
+        WHERE shop_number = #{shopNumber}
+          AND id = #{couponTemplateId}
+    </update>
+</mapper>
